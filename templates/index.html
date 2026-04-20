@@ -322,6 +322,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <a href="#verdict">Conclusions</a>
     <a href="#demo">Live Demo</a>
     <a href="#faq">FAQ</a>
+    <a href="/flow" target="_blank" style="background:var(--bg3);color:var(--ink)">System Flow ↗</a>
   </nav>
   <div class="nav-badge">NCI H9DAI 2026</div>
 </header>
@@ -347,8 +348,8 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="stats-panel">
       <div class="stat-box"><div class="stat-num" data-target="3" data-suffix="">0</div><div class="stat-lbl">Datasets</div></div>
       <div class="stat-box"><div class="stat-num" data-target="12" data-suffix="">0</div><div class="stat-lbl">Models trained</div></div>
-      <div class="stat-box"><div class="stat-num" data-target="98.1" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">D3 Accuracy (4-class)</div></div>
-      <div class="stat-box"><div class="stat-num" data-target="12.7" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">vs Base Paper ↑</div></div>
+      <div class="stat-box"><div class="stat-num" data-target="98.1" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">D3 Accuracy (binary)</div></div>
+      <div class="stat-box"><div class="stat-num" data-target="11.4" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">vs Base Paper ↑</div></div>
     </div>
   </div>
 </div>
@@ -437,7 +438,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
         </div>
         <div class="md-block">
           <div class="md-block-lbl">D3 — Suicide Risk (Kaggle: nikhileswarkomati)</div>
-          <div class="md-block-val"><em>232,074 Reddit posts · 2 classes</em> — Suicide / Non-Suicide (perfectly balanced, 116,037 each). Suicide posts average <em>212 words</em> (mean), non-suicide posts 63 words. We sample <em>50K posts</em> and compare against full/half splits to answer RQ2.</div>
+          <div class="md-block-val"><em>232,074 Reddit posts · 2 classes</em> — Suicide / Non-Suicide (perfectly balanced, 116,037 each). Suicide posts average <em>200.8 words</em> (mean), non-suicide posts 63 words. We sample <em>50K posts</em> and compare against full/half splits to answer RQ2.</div>
         </div>
         <div class="md-block">
           <div class="md-block-lbl">Business Context</div>
@@ -578,7 +579,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="finding">
       <div class="finding-n">02</div>
       <div class="finding-t">XLM-RoBERTa is the best model for long-form text</div>
-      <div class="finding-b">On Reddit suicide risk posts (D3), XLM-RoBERTa achieves 98.1% Accuracy with the 50K sample. Suicide posts average 212 words — rich enough context for transformer embeddings to dominate every competitor. D2 (Twitter, ~31 words) tells the opposite story.</div>
+      <div class="finding-b">On Reddit suicide risk posts (D3), XLM-RoBERTa achieves 98.1% Accuracy with the 50K sample. Suicide posts average 200.8 words — rich enough context for transformer embeddings to dominate every competitor. D2 (Twitter, ~31 words) tells the opposite story.</div>
       <div class="finding-chip">D3 Accuracy: XLM-RoBERTa 98.1%</div>
     </div>
     <div class="finding">
@@ -739,7 +740,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="faq-group-title">Data &amp; Datasets</div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">What are the three datasets and what makes them different? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">D1 — 6-class depression type classification (atypical, bipolar, major depressive, no depression, postpartum, psychotic) from Kaggle. Twitter-length text, 11,986 samples. D2 — binary suicide/non-suicide from Twitter (10,314 samples, severe 3.46× imbalance). D3 — 4-class suicide/depression/anxiety/normal from Reddit (232K samples, pre-balanced). Each dataset has a different task, different text length, and different vocabulary domain — which is precisely why running all three in parallel is informative.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">D1 — 6-class depression type classification (atypical, bipolar, major depressive, no depression, postpartum, psychotic) from Kaggle. Twitter-length text, 11,986 samples. D2 — binary depressed/not-depressed from Twitter (10,314 samples, severe 3.46× imbalance). D3 — binary suicide/non-suicide from Reddit (232K samples, perfectly balanced 116,037 each — we use a 50K sample of 25K per class). Each dataset has a different task, different text length, and different vocabulary domain — which is precisely why running all three in parallel is informative.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">How did you handle class imbalance? Why SMOTE and not class weighting? <span class="faq-chevron">▼</span></button>
@@ -755,7 +756,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="faq-group-title">Methodology &amp; Models</div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why four model types per dataset? Why not just use the best one? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">Each captures a different inductive bias: Logistic Regression (linear decision boundary), SVM (maximum-margin), Random Forest/XGBoost (non-linear tree ensembles), XLM-RoBERTa (contextual transformer). Disagreement between models is itself a signal. On D1, SVM (92.4%) beats XLM-RoBERTa (90.5%) — short tweets don't give the transformer enough context to gain advantage. On D3 (212-word Reddit posts), XLM-RoBERTa (98.1%) dominates every classical model.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">Each captures a different inductive bias: Logistic Regression (linear decision boundary), SVM (maximum-margin), Random Forest/XGBoost (non-linear tree ensembles), XLM-RoBERTa (contextual transformer). Disagreement between models is itself a signal. On D1, SVM (92.4%) beats XLM-RoBERTa (90.5%) — short tweets don't give the transformer enough context to gain advantage. On D3 (200.8-word Reddit posts), XLM-RoBERTa (98.1%) dominates every classical model.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">What are your TF-IDF settings and why? <span class="faq-chevron">▼</span></button>
@@ -763,11 +764,11 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">How was XLM-RoBERTa fine-tuned? What hyperparameters? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">Standard sequence classification fine-tuning: Adam optimiser, <code>lr=2e-5</code>, <code>3 epochs</code>, linear warmup scheduler. Max token length: 128 for D1/D2 (Twitter-length text), 256 for D3 (Reddit posts average 212 words). Cross-entropy loss. Best checkpoint saved by validation accuracy. 278M parameters — multilingual pretraining covers 100 languages.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">Standard sequence classification fine-tuning: Adam optimiser, <code>lr=2e-5</code>, <code>3 epochs</code>, linear warmup scheduler. Max token length: 128 for D1/D2 (Twitter-length text), 256 for D3 (Reddit posts average 200.8 words). Cross-entropy loss. Best checkpoint saved by validation accuracy. 278M parameters — multilingual pretraining covers 100 languages.</div></div>
     </div>
     <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">Why did XGBoost collapse on D3 to only 71%? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">This is TF-IDF lexical overfitting. D3 is a 4-class task where depressive and suicidal vocabulary heavily overlap in Reddit posts — words like "exhausted", "hopeless", "nothing matters" appear in both classes. Boosted trees overfit to these majority-class token patterns and fail to distinguish fine-grained class boundaries. XLM-RoBERTa's contextual embeddings resolve this because it reads the full sentence, not just individual tokens.</div></div>
+      <button class="faq-q" onclick="toggleFaq(this)">Why did XGBoost collapse on D3 at full scale? <span class="faq-chevron">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">On the 50K sample, XGBoost achieves 91.6% — competitive. At full scale (232K), it collapses to 70.52% (Macro F1: 0.6998). This is TF-IDF lexical overfitting: vocabulary overlap between "suicide" and "non-suicide" Reddit posts increases with scale — words like "exhausted", "hopeless", "nothing matters" appear in both classes. Boosted trees memorise these majority-class token patterns instead of learning discriminative boundaries. H1 (116K) drops further to 60.1%, and H1 vs H2 are inconsistent (60.1% vs 70.9%), confirming XGBoost is unstable at this data scale. XLM-RoBERTa stays at 98.1% across all splits.</div></div>
     </div>
   </div>
 
@@ -775,7 +776,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="faq-group-title">Results &amp; Evaluation</div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why is SVM accuracy 92.4% on D1 but XLM-RoBERTa (278M params) only gets 90.5%? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">Text length. D1 tweets average ~31 words. Transformers need rich context to outperform classical methods — contextual embeddings add little value when the sentence is 5–10 tokens. TF-IDF bigrams on short explicit text (like tweets) already capture the full signal. This is Finding 01 and one of the key research conclusions: model selection must be text-length aware.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">Text length. D1 tweets average ~31 words. Transformers need rich context to outperform classical methods — contextual embeddings add little value on ~40-token inputs. TF-IDF bigrams on short explicit text (like tweets) already capture the full signal. This is Finding 01 and one of the key research conclusions: model selection must be text-length aware.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why show accuracy rather than Macro F1? Isn't accuracy misleading on imbalanced data? <span class="faq-chevron">▼</span></button>
@@ -783,7 +784,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Did adding more training data (50K → 232K) improve D3 results? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">No — only 0.1% change in XLM-RoBERTa accuracy (98.1% → 98.0%). Kolmogorov-Smirnov tests confirm all four splits (Full 232K, H1 116K, H2 116K, Sample 50K) share identical distributions (p &gt; 0.49). The 50K sample fully captures the underlying signal. This is Finding 03 and validates our choice of the 50K sample for the final model.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">No — XLM-RoBERTa: 98.1% (50K, NB2) · 98.02% (Full 232K) · 97.78% (H1) · 98.02% (H2). Maximum delta = 0.32%. KS tests across the three split study splits (Full, H1, H2) confirm identical distributions: suicide class p=0.4967 (H1 vs H2), p=0.9758 (Full vs H1); non-suicide class p=0.8125 (H1 vs H2), p=0.9992 (Full vs H1). All well above the p=0.05 threshold — distribution shift is not driving the results. This is Finding 03.</div></div>
     </div>
   </div>
 
@@ -1058,7 +1059,7 @@ def tokenize_tweets(examples):
         padding='max_length' # pad shorter inputs to fixed length
     )
 
-# D3 uses max_length=256 — Reddit posts avg 212 words (~280 tokens)
+# D3 uses max_length=256 — Reddit posts avg 200.8 words (~280 tokens)
 def tokenize_reddit(examples):
     return tokenizer(
         examples['text'],
@@ -1067,7 +1068,7 @@ def tokenize_reddit(examples):
         padding='max_length'
     )`,
     src: 'notebooks/DA_2_Notebook.ipynb — cell 9 (tokenize_tweets, max_length=128, D1/D2) · cell 21 (tokenize_reddit, max_length=256, D3)',
-    why: '<strong>SentencePiece subword tokenisation:</strong> Splits unknown words into subword pieces — "suicidal" might become ["su", "ici", "dal"]. No word is truly out-of-vocabulary. <strong>max_length=128 for D1/D2:</strong> Tweets average ~31 words ≈ 40 tokens. 128 is 3× headroom. <strong>max_length=256 for D3:</strong> Reddit posts average 212 words ≈ 280 tokens — 128 would truncate most of the signal. <strong>padding=\'max_length\':</strong> All batches must be identical length for GPU tensor operations — shorter inputs are padded with [PAD] tokens. The attention mask tells the model to ignore padding.',
+    why: '<strong>SentencePiece subword tokenisation:</strong> Splits unknown words into subword pieces — "suicidal" might become ["su", "ici", "dal"]. No word is truly out-of-vocabulary. <strong>max_length=128 for D1/D2:</strong> Tweets average ~31 words ≈ 40 tokens. 128 is 3× headroom. <strong>max_length=256 for D3:</strong> Reddit posts average 200.8 words ≈ 280 tokens — 128 would truncate most of the signal. <strong>padding=\'max_length\':</strong> All batches must be identical length for GPU tensor operations — shorter inputs are padded with [PAD] tokens. The attention mask tells the model to ignore padding.',
     outputs: [
       {label:'D1/D2 shape', val:'Each input → tensor of shape [128] (input_ids) + [128] (attention_mask)'},
       {label:'D3 shape', val:'Each input → tensor of shape [256] × 2'},

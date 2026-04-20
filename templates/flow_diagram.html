@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MindScan — How It Works (Team Reference)</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5f0;--bg2:#efece8;--bg3:#e6e2da;
+  --ink:#1a1816;--ink2:#5c5750;--ink3:#9c9790;
+  --border:rgba(26,24,22,0.09);--border2:rgba(26,24,22,0.16);
+  --blue:#1d4ed8;--blue-bg:#eff6ff;
+  --amber:#b45309;--amber-bg:#fffbeb;
+  --red:#b91c1c;--red-bg:#fef2f2;
+  --green:#15803d;--green-bg:#f0fdf4;
+  --purple:#6d28d9;--purple-bg:#f5f3ff;
+  --teal:#0f766e;--teal-bg:#f0fdfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+header{padding:16px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(247,245,240,.95);position:sticky;top:0;z-index:20;backdrop-filter:blur(8px)}
+.logo{font-family:'Instrument Serif',serif;font-size:17px;letter-spacing:-.02em}.logo em{font-style:italic;color:var(--ink2)}
+.hbadge{font-size:10px;font-family:'DM Mono',monospace;background:var(--blue-bg);color:var(--blue);border:1px solid rgba(29,78,216,.2);padding:3px 9px;border-radius:20px}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 53px)}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;position:sticky;top:53px;height:calc(100vh - 53px)}
+.main{padding:32px 36px}
+
+/* SIDEBAR */
+.sb-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.step-list{display:flex;flex-direction:column;gap:4px;margin-bottom:24px}
+.step-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .15s;text-align:left;background:none;width:100%}
+.step-btn:hover{background:var(--bg2);border-color:var(--border)}
+.step-btn.active{background:var(--ink);border-color:var(--ink)}
+.step-btn.active .sb-num{background:rgba(255,255,255,.15);color:#fff}
+.step-btn.active .sb-name{color:#fff}
+.step-btn.active .sb-loc{color:rgba(255,255,255,.55)}
+.sb-num{width:26px;height:26px;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;color:var(--ink2);flex-shrink:0}
+.sb-info{min-width:0}
+.sb-name{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-loc{font-size:10px;font-family:'DM Mono',monospace;color:var(--ink3);margin-top:1px}
+.sb-divider{height:1px;background:var(--border);margin:12px 0}
+.sb-section{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;margin-top:4px}
+
+/* KEY LEGEND */
+.legend{background:var(--bg2);border-radius:8px;padding:12px 14px}
+.legend-title{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px;color:var(--ink2)}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* MAIN CONTENT */
+.step-content{display:none;animation:fadeIn .2s ease}
+.step-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.step-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:24px}
+.step-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.step-num-big{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;margin-bottom:4px}
+.step-title{font-family:'Instrument Serif',serif;font-size:26px;letter-spacing:-.02em;color:var(--ink);margin-bottom:4px}
+.step-file{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)}
+
+.code-block{background:var(--ink);border-radius:10px;padding:18px 20px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.9;color:#e2dfd8;margin-bottom:16px;overflow-x:auto}
+.code-block .kw{color:#79b8ff}
+.code-block .fn{color:#b3d9ff}
+.code-block .str{color:#9ecf72}
+.code-block .cm{color:#6b7d8a}
+.code-block .num{color:#f0c479}
+.code-block .cls{color:#e2b36a}
+
+.what-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.what-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.what-body{font-size:13px;color:var(--ink2);line-height:1.65}
+.what-body strong{color:var(--ink)}
+
+.important-box{border-radius:10px;padding:14px 16px;margin-bottom:16px;border:1px solid;font-size:12px;line-height:1.6}
+.imp-blue{background:var(--blue-bg);border-color:rgba(29,78,216,.2);color:#1e3a8a}
+.imp-amber{background:var(--amber-bg);border-color:rgba(180,83,9,.2);color:#78350f}
+.imp-green{background:var(--green-bg);border-color:rgba(21,128,61,.2);color:#14532d}
+.imp-red{background:var(--red-bg);border-color:rgba(185,28,28,.2);color:#7f1d1d}
+.imp-purple{background:var(--purple-bg);border-color:rgba(109,40,217,.2);color:#3b0764}
+.imp-title{font-weight:500;margin-bottom:3px}
+
+.returns-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.ret-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+.ret-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.ret-row:last-child{border-bottom:none}
+.ret-key{font-family:'DM Mono',monospace;font-weight:500;min-width:180px;color:var(--ink)}
+.ret-val{color:var(--ink2)}
+
+/* FLOW MAP */
+.flow-mini{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;background:var(--bg2);border-radius:10px;padding:12px 16px}
+.flow-node{font-size:10px;font-family:'DM Mono',monospace;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:#fff;white-space:nowrap}
+.flow-node.active-node{background:var(--ink);color:#fff;border-color:var(--ink)}
+.flow-arrow{color:var(--ink3);font-size:12px}
+
+/* NAV BUTTONS */
+.nav-btns{display:flex;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
+.nav-btn{font-size:12px;font-family:'DM Mono',monospace;padding:7px 16px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--ink2);cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+
+@media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Mind<em>Scan</em> — <em>System Flow</em></div>
+  <div class="hbadge">Team Reference · GitHub</div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-title">What happens when you click Run?</div>
+
+    <div class="sb-section">Frontend — index.html</div>
+    <div class="step-list">
+      <button class="step-btn active" onclick="goTo(0)">
+        <div class="sb-num" style="background:var(--blue-bg);color:var(--blue)">1</div>
+        <div class="sb-info"><div class="sb-name">Button click</div><div class="sb-loc">index.html → runAnalysis()</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(1)">
+        <div class="sb-num" style="background:var(--blue-bg);color:var(--blue)">2</div>
+        <div class="sb-info"><div class="sb-name">fetch('/predict')</div><div class="sb-loc">index.html → POST request</div></div>
+      </button>
+    </div>
+
+    <div class="sb-section">Backend — app.py</div>
+    <div class="step-list">
+      <button class="step-btn" onclick="goTo(2)">
+        <div class="sb-num" style="background:var(--amber-bg);color:var(--amber)">3</div>
+        <div class="sb-info"><div class="sb-name">Flask receives it</div><div class="sb-loc">app.py → predict()</div></div>
+      </button>
+    </div>
+
+    <div class="sb-section">Prediction logic — predict.py</div>
+    <div class="step-list">
+      <button class="step-btn" onclick="goTo(3)">
+        <div class="sb-num" style="background:var(--green-bg);color:var(--green)">4</div>
+        <div class="sb-info"><div class="sb-name">clean_text()</div><div class="sb-loc">predict.py → text cleaning</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(4)">
+        <div class="sb-num" style="background:var(--green-bg);color:var(--green)">5</div>
+        <div class="sb-info"><div class="sb-name">predict_classical()</div><div class="sb-loc">predict.py → LR · SVM · XGBoost</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(5)">
+        <div class="sb-num" style="background:var(--purple-bg);color:var(--purple)">6</div>
+        <div class="sb-info"><div class="sb-name">predict_xlmr()</div><div class="sb-loc">predict.py → transformer</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(6)">
+        <div class="sb-num" style="background:var(--green-bg);color:var(--green)">7</div>
+        <div class="sb-info"><div class="sb-name">predict_all()</div><div class="sb-loc">predict.py → assembles all 12</div></div>
+      </button>
+    </div>
+
+    <div class="sb-section">Response — back to browser</div>
+    <div class="step-list">
+      <button class="step-btn" onclick="goTo(7)">
+        <div class="sb-num" style="background:var(--amber-bg);color:var(--amber)">8</div>
+        <div class="sb-info"><div class="sb-name">JSON response</div><div class="sb-loc">app.py → jsonify() → browser</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(8)">
+        <div class="sb-num" style="background:var(--blue-bg);color:var(--blue)">9</div>
+        <div class="sb-info"><div class="sb-name">render() + buildPanel()</div><div class="sb-loc">index.html → shows results</div></div>
+      </button>
+      <button class="step-btn" onclick="goTo(9)">
+        <div class="sb-num" style="background:var(--blue-bg);color:var(--blue)">10</div>
+        <div class="sb-info"><div class="sb-name">CSS bar animation</div><div class="sb-loc">index.html → confidence bars</div></div>
+      </button>
+    </div>
+
+    <div class="sb-divider"></div>
+    <div class="legend">
+      <div class="legend-title">File colours</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--blue)"></div>index.html — frontend JS</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--amber)"></div>app.py — Flask server</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--green)"></div>predict.py — model logic</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--purple)"></div>XLM-RoBERTa specific</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- STEP 0 — Button click -->
+    <div class="step-content active" id="step0">
+      <div class="flow-mini">
+        <div class="flow-node active-node">1 · Button click</div><div class="flow-arrow">→</div>
+        <div class="flow-node">2 · fetch()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">3 · Flask</div><div class="flow-arrow">→</div>
+        <div class="flow-node">4–7 · predict.py</div><div class="flow-arrow">→</div>
+        <div class="flow-node">8 · JSON</div><div class="flow-arrow">→</div>
+        <div class="flow-node">9–10 · UI</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--blue-bg)">🖱</div>
+        <div>
+          <div class="step-num-big" style="color:var(--blue)">Step 01 · index.html</div>
+          <div class="step-title">User clicks "Run all 12 models"</div>
+          <div class="step-file">onclick="runAnalysis()" — defined in index.html &lt;script&gt;</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">The button has an <strong>onclick</strong> attribute pointing to <strong>runAnalysis()</strong>. This function grabs whatever text is in the textarea, disables the button, shows a spinning animation, and starts the process. Nothing touches any model yet — this is purely UI setup.</div>
+      </div>
+      <div class="code-block"><span class="cm">// Button in HTML</span>
+&lt;button <span class="kw">onclick</span>=<span class="str">"runAnalysis()"</span>&gt;
+  Run all <span class="num">12</span> models
+&lt;/button&gt;
+
+<span class="cm">// Function in &lt;script&gt; at bottom of index.html</span>
+<span class="kw">async function</span> <span class="fn">runAnalysis</span>() {
+  <span class="kw">const</span> text = document.<span class="fn">getElementById</span>(<span class="str">'textInput'</span>).value.<span class="fn">trim</span>();
+  <span class="kw">if</span> (!text) <span class="kw">return</span>;   <span class="cm">// do nothing if textarea is empty</span>
+
+  btn.disabled = <span class="kw">true</span>;          <span class="cm">// disable button while running</span>
+  spinner.style.display = <span class="str">'block'</span>; <span class="cm">// show spinning circle</span>
+  btnTxt.textContent = <span class="str">'Running 12 models...'</span>;
+  <span class="cm">// next: send to backend ↓</span>
+}</div>
+      <div class="important-box imp-blue">
+        <div class="imp-title">Important for teammates</div>
+        The function is async (uses await). This means the browser does NOT freeze while waiting for the server — the user can still scroll the page. async/await is just a cleaner way of writing a Promise.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" disabled>← Previous</button>
+        <button class="nav-btn" onclick="goTo(1)">Next: fetch('/predict') →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1 — fetch -->
+    <div class="step-content" id="step1">
+      <div class="flow-mini">
+        <div class="flow-node">1 · Button click</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">2 · fetch()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">3 · Flask</div><div class="flow-arrow">→</div>
+        <div class="flow-node">4–7 · predict.py</div><div class="flow-arrow">→</div>
+        <div class="flow-node">8 · JSON</div><div class="flow-arrow">→</div>
+        <div class="flow-node">9–10 · UI</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--blue-bg)">📡</div>
+        <div>
+          <div class="step-num-big" style="color:var(--blue)">Step 02 · index.html</div>
+          <div class="step-title">HTTP request sent to Flask</div>
+          <div class="step-file">fetch('/predict') — browser's built-in HTTP function</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">The browser sends an <strong>HTTP POST request</strong> to the Flask server at <strong>/predict</strong>. The text is sent as JSON in the request body. The browser then waits for a response — this is when the ~2 second loading spinner appears.</div>
+      </div>
+      <div class="code-block"><span class="cm">// Still inside runAnalysis() in index.html</span>
+<span class="kw">const</span> r = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/predict'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: <span class="cls">JSON</span>.<span class="fn">stringify</span>({ text })
+  <span class="cm">// sends: { "text": "I feel hopeless..." }</span>
+});
+
+<span class="kw">const</span> d = <span class="kw">await</span> r.<span class="fn">json</span>();   <span class="cm">// parse the JSON response</span>
+<span class="fn">render</span>(d, text);              <span class="cm">// draw results on screen</span></div>
+      <div class="important-box imp-amber">
+        <div class="imp-title">Why /predict and not a full URL?</div>
+        Because the frontend and backend run on the same server (localhost:5000). Flask serves both the HTML page and the API endpoint. A relative URL like /predict automatically goes to the same host.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(0)">← Button click</button>
+        <button class="nav-btn" onclick="goTo(2)">Next: Flask receives it →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Flask -->
+    <div class="step-content" id="step2">
+      <div class="flow-mini">
+        <div class="flow-node">1 · Button click</div><div class="flow-arrow">→</div>
+        <div class="flow-node">2 · fetch()</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">3 · Flask</div><div class="flow-arrow">→</div>
+        <div class="flow-node">4–7 · predict.py</div><div class="flow-arrow">→</div>
+        <div class="flow-node">8 · JSON</div><div class="flow-arrow">→</div>
+        <div class="flow-node">9–10 · UI</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--amber-bg)">🐍</div>
+        <div>
+          <div class="step-num-big" style="color:var(--amber)">Step 03 · app.py</div>
+          <div class="step-title">Flask receives the POST request</div>
+          <div class="step-file">app.py → @app.route('/predict') → predict()</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">Flask matches the incoming request to the <strong>@app.route('/predict')</strong> decorator. The predict() function extracts the text from the request body, validates it (not empty, not too long), then calls predict_all() from predict.py. It wraps the result with processing time and sends it back as JSON.</div>
+      </div>
+      <div class="code-block"><span class="cm"># app.py</span>
+<span class="kw">from</span> predict <span class="kw">import</span> predict_all
+
+<span class="kw">@app.route</span>(<span class="str">'/predict'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">predict</span>():
+  data = request.<span class="fn">get_json</span>()
+  text = data[<span class="str">'text'</span>].<span class="fn">strip</span>()
+
+  <span class="cm"># validation</span>
+  <span class="kw">if not</span> text:
+    <span class="kw">return</span> <span class="fn">jsonify</span>({<span class="str">'error'</span>: <span class="str">'Text cannot be empty'</span>}), <span class="num">400</span>
+  <span class="kw">if</span> <span class="fn">len</span>(text) > <span class="num">5000</span>:
+    <span class="kw">return</span> <span class="fn">jsonify</span>({<span class="str">'error'</span>: <span class="str">'Too long'</span>}), <span class="num">400</span>
+
+  t0 = time.<span class="fn">time</span>()
+  result = <span class="fn">predict_all</span>(text)          <span class="cm"># ← the big function (next steps)</span>
+  result[<span class="str">'processing_time_ms'</span>] = <span class="fn">round</span>((time.<span class="fn">time</span>() - t0) * <span class="num">1000</span>)
+  <span class="kw">return</span> <span class="fn">jsonify</span>(result)              <span class="cm"># sends JSON back to browser</span></div>
+      <div class="important-box imp-amber">
+        <div class="imp-title">Models load at STARTUP not per request</div>
+        The 12 models are loaded once when you run python app.py (takes ~30s). Every subsequent request reuses them from RAM. If models loaded per request it would take 30s per click.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(1)">← fetch()</button>
+        <button class="nav-btn" onclick="goTo(3)">Next: clean_text() →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 — clean_text -->
+    <div class="step-content" id="step3">
+      <div class="flow-mini">
+        <div class="flow-node">1–3 · Browser → Flask</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">4 · clean_text()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">5 · classical</div><div class="flow-arrow">→</div>
+        <div class="flow-node">6 · XLM-R</div><div class="flow-arrow">→</div>
+        <div class="flow-node">7 · assemble</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--green-bg)">🧹</div>
+        <div>
+          <div class="step-num-big" style="color:var(--green)">Step 04 · predict.py</div>
+          <div class="step-title">Text cleaning</div>
+          <div class="step-file">predict.py → clean_text(raw_text)</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">The raw text is cleaned with the <strong>same pipeline used in training</strong>. This is critical — if you trained on cleaned text, you must clean the same way at prediction time. The classical models (LR, SVM, XGBoost) use the cleaned version. XLM-RoBERTa uses the original raw text because its tokeniser handles formatting itself.</div>
+      </div>
+      <div class="code-block"><span class="cm"># predict.py</span>
+<span class="kw">def</span> <span class="fn">clean_text</span>(text):
+  text = <span class="fn">str</span>(text).<span class="fn">lower</span>()                          <span class="cm"># UPPERCASE → lowercase</span>
+  text = re.<span class="fn">sub</span>(<span class="str">r'http\S+|www\S+'</span>, <span class="str">''</span>, text)       <span class="cm"># remove URLs</span>
+  text = re.<span class="fn">sub</span>(<span class="str">r'@\w+'</span>, <span class="str">''</span>, text)                  <span class="cm"># remove @mentions</span>
+  text = re.<span class="fn">sub</span>(<span class="str">r'#'</span>, <span class="str">''</span>, text)                       <span class="cm"># remove # (keep word)</span>
+  text = text.<span class="fn">translate</span>(str.<span class="fn">maketrans</span>(<span class="str">''</span>,<span class="str">''</span>,punctuation))  <span class="cm"># remove !.,?etc</span>
+  text = re.<span class="fn">sub</span>(<span class="str">r'\s+'</span>, <span class="str">' '</span>, text).<span class="fn">strip</span>()            <span class="cm"># collapse spaces</span>
+  <span class="kw">return</span> text
+
+<span class="cm"># Example:</span>
+<span class="cm"># IN:  "@user I've been SO depressed https://t.co #mentalhealth 😢"</span>
+<span class="cm"># OUT: "ive been so depressed mentalhealth"</span></div>
+      <div class="returns-box">
+        <div class="ret-title">Used by</div>
+        <div class="ret-row"><div class="ret-key">Classical models (LR/SVM/XGB)</div><div class="ret-val">Use the cleaned version — TF-IDF cannot handle URLs, emojis, punctuation</div></div>
+        <div class="ret-row"><div class="ret-key">XLM-RoBERTa</div><div class="ret-val">Uses the ORIGINAL raw_text — the transformer's tokeniser handles it better</div></div>
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(2)">← Flask</button>
+        <button class="nav-btn" onclick="goTo(4)">Next: Classical models →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 — classical -->
+    <div class="step-content" id="step4">
+      <div class="flow-mini">
+        <div class="flow-node">1–4 · Browser → clean</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">5 · predict_classical()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">6 · XLM-R</div><div class="flow-arrow">→</div>
+        <div class="flow-node">7 · assemble</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--green-bg)">⚙️</div>
+        <div>
+          <div class="step-num-big" style="color:var(--green)">Step 05 · predict.py</div>
+          <div class="step-title">Classical model predictions</div>
+          <div class="step-file">predict.py → predict_classical(text_clean, ds)</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens — 3 steps inside this function</div>
+        <div class="what-body"><strong>1. TF-IDF transform:</strong> Converts the cleaned text into a vector of 50,000 numbers using the same vectoriser fitted during training.<br><br><strong>2. Model.predict:</strong> Each of the 3 classical models takes the vector and outputs a class index (e.g. 4 = "postpartum").<br><br><strong>3. Confidence score:</strong> Different method per model — LR and XGBoost use predict_proba(), SVM uses decision_function() converted via softmax.</div>
+      </div>
+      <div class="code-block"><span class="cm"># predict.py — called 3× (once per dataset)</span>
+<span class="kw">def</span> <span class="fn">predict_classical</span>(text_clean, ds):
+  tfidf = _models[<span class="str">f'tfidf_{ds}'</span>]
+  le    = _models[<span class="str">f'le_{ds}'</span>]
+  vec   = tfidf.<span class="fn">transform</span>([text_clean])   <span class="cm"># text → 50K-dim vector</span>
+
+  <span class="kw">for</span> model_name <span class="kw">in</span> [<span class="str">'logistic_regression'</span>, <span class="str">'svm'</span>, <span class="str">'xgboost'</span>]:
+    model    = _models[<span class="str">f'{model_name}_{ds}'</span>]
+    pred_idx = model.<span class="fn">predict</span>(vec)[<span class="num">0</span>]         <span class="cm"># → e.g. 4</span>
+    label    = le.classes_[pred_idx]           <span class="cm"># 4 → "postpartum"</span>
+
+    <span class="cm"># LR / XGBoost: direct probability</span>
+    <span class="kw">if</span> <span class="fn">hasattr</span>(model, <span class="str">'predict_proba'</span>):
+      conf = model.<span class="fn">predict_proba</span>(vec)[<span class="num">0</span>][pred_idx]
+
+    <span class="cm"># SVM: no predict_proba → use softmax of decision scores</span>
+    <span class="kw">elif</span> <span class="fn">hasattr</span>(model, <span class="str">'decision_function'</span>):
+      scores = model.<span class="fn">decision_function</span>(vec)[<span class="num">0</span>]
+      e      = np.<span class="fn">exp</span>(scores - scores.<span class="fn">max</span>())
+      conf   = e[pred_idx] / e.<span class="fn">sum</span>()         <span class="cm"># normalise to 0–1</span></div>
+      <div class="important-box imp-green">
+        <div class="imp-title">Why SVM needs special treatment</div>
+        SVM (LinearSVC) finds a decision boundary but does not model probabilities — it just says "which side of the line?" Converting decision_function scores with softmax gives a reasonable confidence proxy. It is not a true probability but works well enough for display.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(3)">← clean_text()</button>
+        <button class="nav-btn" onclick="goTo(5)">Next: XLM-RoBERTa →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5 — XLM-RoBERTa -->
+    <div class="step-content" id="step5">
+      <div class="flow-mini">
+        <div class="flow-node">1–5 · Browser → classical</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">6 · predict_xlmr()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">7 · assemble</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--purple-bg)">🤖</div>
+        <div>
+          <div class="step-num-big" style="color:var(--purple)">Step 06 · predict.py</div>
+          <div class="step-title">XLM-RoBERTa prediction</div>
+          <div class="step-file">predict.py → predict_xlmr(raw_text, model, le, max_len)</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens — 4 steps</div>
+        <div class="what-body"><strong>1. Tokenise:</strong> The tokeniser splits text into sub-word pieces and converts them to integer IDs (e.g. "hopeless" might become [1234, 5678]).<br><br><strong>2. Forward pass:</strong> The 278M parameter model processes the token IDs and produces raw logit scores for each class.<br><br><strong>3. Softmax:</strong> Converts logits to proper probabilities that sum to 1.0.<br><br><strong>4. All class probs:</strong> Returns every class probability, not just the winner — this feeds the 6-class breakdown bars in Dataset 1.</div>
+      </div>
+      <div class="code-block"><span class="cm"># predict.py — called 3× (once per dataset)</span>
+<span class="kw">def</span> <span class="fn">predict_xlmr</span>(raw_text, xlmr_model, le, max_len=<span class="num">128</span>):
+  inputs = tokenizer(
+    raw_text,
+    return_tensors=<span class="str">'pt'</span>,         <span class="cm"># PyTorch tensors</span>
+    max_length=max_len,            <span class="cm"># 128 for tweets, 256 for Reddit</span>
+    truncation=<span class="kw">True</span>,
+    padding=<span class="str">'max_length'</span>
+  ).<span class="fn">to</span>(device)                    <span class="cm"># send to GPU if available</span>
+
+  <span class="kw">with</span> torch.<span class="fn">no_grad</span>():            <span class="cm"># no_grad saves memory (not training)</span>
+    logits = xlmr_model(**inputs).logits
+
+  probs    = torch.<span class="fn">softmax</span>(logits, dim=<span class="num">1</span>)[<span class="num">0</span>]  <span class="cm"># → [0.91, 0.04, 0.02, ...]</span>
+  pred_idx = <span class="fn">int</span>(probs.<span class="fn">argmax</span>())               <span class="cm"># index of highest</span>
+  label    = le.classes_[pred_idx]
+
+  all_probs = {le.classes_[i]: <span class="fn">float</span>(p) <span class="kw">for</span> i, p <span class="kw">in</span> <span class="fn">enumerate</span>(probs)}
+  <span class="cm"># all_probs = {"postpartum":0.913, "bipolar":0.041, ...}</span>
+  <span class="cm"># only D1 uses this for the breakdown chart</span>
+
+  <span class="kw">return</span> {<span class="str">'label'</span>: label, <span class="str">'confidence'</span>: <span class="fn">float</span>(probs[pred_idx]), <span class="str">'all_probs'</span>: all_probs}</div>
+      <div class="important-box imp-purple">
+        <div class="imp-title">max_length differs per dataset</div>
+        D1 and D2 are tweets (avg 31 words ≈ 40 tokens) → max_length=128. D3 is Reddit posts (avg 200 words ≈ 260 tokens) → max_length=256. This doubles memory usage for D3, which is why batch_size was halved during training.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(4)">← Classical models</button>
+        <button class="nav-btn" onclick="goTo(6)">Next: predict_all() →</button>
+      </div>
+    </div>
+
+    <!-- STEP 6 — predict_all -->
+    <div class="step-content" id="step6">
+      <div class="flow-mini">
+        <div class="flow-node">1–6 · all models run</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">7 · predict_all()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">8 · JSON</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--green-bg)">🔧</div>
+        <div>
+          <div class="step-num-big" style="color:var(--green)">Step 07 · predict.py</div>
+          <div class="step-title">predict_all() assembles everything</div>
+          <div class="step-file">predict.py → predict_all(raw_text) — the main function</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">predict_all() is the orchestrator. It calls predict_classical() 3 times (once per dataset) and predict_xlmr() 3 times. Then it finds the winner per dataset (highest confidence), runs the suicide majority vote across D3's 4 models, and packages everything into a single JSON-ready dictionary.</div>
+      </div>
+      <div class="code-block"><span class="cm"># predict.py — the main function Flask calls</span>
+<span class="kw">def</span> <span class="fn">predict_all</span>(raw_text):
+  clean = <span class="fn">clean_text</span>(raw_text)
+
+  <span class="cm"># Run all 4 models per dataset</span>
+  d1 = <span class="fn">predict_classical</span>(clean, <span class="str">'d1'</span>)  <span class="cm"># → {LR:{}, SVM:{}, XGB:{}}</span>
+  d1[<span class="str">'XLM-RoBERTa'</span>] = <span class="fn">predict_xlmr</span>(raw_text, xlmr1, le1, <span class="num">128</span>)
+  <span class="cm"># same for d2, d3...</span>
+
+  <span class="cm"># Winner = model with highest confidence</span>
+  d1_winner = <span class="fn">max</span>(d1.items(), key=<span class="kw">lambda</span> x: x[<span class="num">1</span>][<span class="str">'confidence'</span>])
+  <span class="cm"># → ('XGBoost', {'label': 'postpartum', 'confidence': 0.999})</span>
+
+  <span class="cm"># Suicide risk = majority vote across 4 D3 models</span>
+  suicide_count = <span class="fn">sum</span>(
+    <span class="num">1</span> <span class="kw">for</span> r <span class="kw">in</span> d3.values()
+    <span class="kw">if</span> <span class="str">'suicide'</span> <span class="kw">in</span> r[<span class="str">'label'</span>] <span class="kw">and</span> <span class="str">'non'</span> <span class="kw">not in</span> r[<span class="str">'label'</span>]
+  )
+  risk_flag = suicide_count >= <span class="num">3</span>   <span class="cm"># ≥3 of 4 models → HIGH RISK</span>
+
+  <span class="kw">return</span> {
+    <span class="str">'dataset1'</span>: {<span class="str">'models'</span>: d1, <span class="str">'winner_model'</span>: d1_winner[<span class="num">0</span>], ...},
+    <span class="str">'dataset2'</span>: {...},
+    <span class="str">'dataset3'</span>: {...},
+    <span class="str">'risk_flag'</span>: risk_flag,
+    <span class="str">'suicide_votes'</span>: <span class="str">f'{suicide_count}/4 models flagged'</span>
+  }</div>
+      <div class="important-box imp-red">
+        <div class="imp-title">The majority vote threshold — why 3 of 4?</div>
+        We chose 3/4 (75%) as the threshold for the high-risk alert. 2/4 (50%) would be too sensitive — a single false positive triggers an alert. 4/4 (100%) would be too strict — if one model misses it, no alert. 3/4 balances sensitivity against false alarms for a research prototype.
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(5)">← XLM-RoBERTa</button>
+        <button class="nav-btn" onclick="goTo(7)">Next: JSON response →</button>
+      </div>
+    </div>
+
+    <!-- STEP 7 — JSON response -->
+    <div class="step-content" id="step7">
+      <div class="flow-mini">
+        <div class="flow-node">1–7 · All predictions done</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">8 · JSON response</div><div class="flow-arrow">→</div>
+        <div class="flow-node">9–10 · UI renders</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--amber-bg)">📦</div>
+        <div>
+          <div class="step-num-big" style="color:var(--amber)">Step 08 · app.py → browser</div>
+          <div class="step-title">JSON sent back to browser</div>
+          <div class="step-file">app.py → jsonify(result) → HTTP 200 response</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What the browser receives</div>
+        <div class="what-body">Flask wraps the predict_all() result in a JSON HTTP response. The browser's fetch() receives this and parses it. The structure below is exactly what flows into the render() function next.</div>
+      </div>
+      <div class="code-block">{
+  <span class="str">"dataset1"</span>: {
+    <span class="str">"task"</span>: <span class="str">"Depression Type (6 Classes)"</span>,
+    <span class="str">"models"</span>: {
+      <span class="str">"Logistic Regression"</span>: { <span class="str">"label"</span>: <span class="str">"postpartum"</span>, <span class="str">"confidence"</span>: <span class="num">0.958</span> },
+      <span class="str">"SVM"</span>:                  { <span class="str">"label"</span>: <span class="str">"postpartum"</span>, <span class="str">"confidence"</span>: <span class="num">0.828</span> },
+      <span class="str">"XGBoost"</span>:              { <span class="str">"label"</span>: <span class="str">"postpartum"</span>, <span class="str">"confidence"</span>: <span class="num">0.999</span> },
+      <span class="str">"XLM-RoBERTa"</span>:         { <span class="str">"label"</span>: <span class="str">"postpartum"</span>, <span class="str">"confidence"</span>: <span class="num">0.997</span> }
+    },
+    <span class="str">"winner_model"</span>:      <span class="str">"XGBoost"</span>,
+    <span class="str">"winner_prediction"</span>: <span class="str">"postpartum"</span>,
+    <span class="str">"winner_confidence"</span>: <span class="num">0.999</span>,
+    <span class="str">"class_probs"</span>: { <span class="str">"postpartum"</span>: <span class="num">0.997</span>, <span class="str">"bipolar"</span>: <span class="num">0.001</span>, ... }
+  },
+  <span class="str">"dataset2"</span>: { ... },
+  <span class="str">"dataset3"</span>: { ... },
+  <span class="str">"risk_flag"</span>: <span class="kw">false</span>,
+  <span class="str">"suicide_votes"</span>: <span class="str">"0/4 models flagged suicide risk"</span>,
+  <span class="str">"processing_time_ms"</span>: <span class="num">2341</span>
+}</div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(6)">← predict_all()</button>
+        <button class="nav-btn" onclick="goTo(8)">Next: render() →</button>
+      </div>
+    </div>
+
+    <!-- STEP 8 — render -->
+    <div class="step-content" id="step8">
+      <div class="flow-mini">
+        <div class="flow-node">1–8 · JSON received</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">9 · render() + buildPanel()</div><div class="flow-arrow">→</div>
+        <div class="flow-node">10 · CSS animation</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--blue-bg)">🎨</div>
+        <div>
+          <div class="step-num-big" style="color:var(--blue)">Step 09 · index.html</div>
+          <div class="step-title">render() draws the results</div>
+          <div class="step-file">index.html → render(data) → buildPanel() × 3</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">render() fills in the three winner cards (depression type, depressed?, suicide risk) and then calls buildPanel() three times — once per dataset — to build the model comparison rows. Each row shows the model name, its prediction, a confidence bar, and a ★ if it's the winner.</div>
+      </div>
+      <div class="code-block"><span class="cm">// index.html — called after fetch() returns</span>
+<span class="kw">function</span> <span class="fn">render</span>(d, text) {
+
+  <span class="cm">// 1. Fill winner cards</span>
+  document.<span class="fn">getElementById</span>(<span class="str">'wpA'</span>).textContent = d.dataset1.winner_prediction;
+  document.<span class="fn">getElementById</span>(<span class="str">'wcA'</span>).textContent = (d.dataset1.winner_confidence * <span class="num">100</span>).<span class="fn">toFixed</span>(<span class="num">1</span>) + <span class="str">'%'</span>;
+
+  <span class="cm">// 2. Build per-model rows for each dataset</span>
+  <span class="fn">buildPanel</span>(<span class="str">'p1'</span>, d.dataset1.models, d.dataset1.winner_model);
+  <span class="fn">buildPanel</span>(<span class="str">'p2'</span>, d.dataset2.models, d.dataset2.winner_model);
+  <span class="fn">buildPanel</span>(<span class="str">'p3'</span>, d.dataset3.models, d.dataset3.winner_model);
+
+  <span class="cm">// 3. Risk banner</span>
+  <span class="kw">if</span> (d.risk_flag) {
+    riskBanner.className = <span class="str">'risk-banner danger'</span>;
+  } <span class="kw">else</span> {
+    riskBanner.className = <span class="str">'risk-banner safe'</span>;
+  }
+
+  <span class="cm">// 4. Show results section</span>
+  document.<span class="fn">getElementById</span>(<span class="str">'results'</span>).style.display = <span class="str">'block'</span>;
+}
+
+<span class="kw">function</span> <span class="fn">buildPanel</span>(panelId, models, winner) {
+  <span class="kw">let</span> html = <span class="str">''</span>;
+  <span class="cls">Object</span>.<span class="fn">entries</span>(models).<span class="fn">forEach</span>(([name, res]) => {
+    html += <span class="str">`&lt;div class="mr ${name===winner?'winner':''}"&gt;
+      &lt;div class="mr-name"&gt;${name}&lt;/div&gt;
+      &lt;div class="mr-pred"&gt;${res.label}&lt;/div&gt;
+      &lt;div class="mr-fill" data-w="${(res.confidence*100).toFixed(1)}"&gt;&lt;/div&gt;
+      &lt;div class="mr-pct"&gt;${(res.confidence*100).toFixed(1)}%&lt;/div&gt;
+    &lt;/div&gt;`</span>;
+  });
+  panel.innerHTML = html;  <span class="cm">// inject HTML</span>
+  <span class="cm">// bars animate next step ↓</span>
+}</div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(7)">← JSON response</button>
+        <button class="nav-btn" onclick="goTo(9)">Next: CSS animation →</button>
+      </div>
+    </div>
+
+    <!-- STEP 9 — CSS animation -->
+    <div class="step-content" id="step9">
+      <div class="flow-mini">
+        <div class="flow-node">1–9 · HTML rows created</div><div class="flow-arrow">→</div>
+        <div class="flow-node active-node">10 · CSS animation</div>
+      </div>
+      <div class="step-header">
+        <div class="step-icon" style="background:var(--blue-bg)">✨</div>
+        <div>
+          <div class="step-num-big" style="color:var(--blue)">Step 10 · index.html + CSS</div>
+          <div class="step-title">Confidence bars animate</div>
+          <div class="step-file">setTimeout(80ms) → style.width → CSS transition</div>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-title">What happens</div>
+        <div class="what-body">The bars are created with <strong>width: 0%</strong>. An 80ms delay gives the browser time to paint the DOM first. Then JavaScript sets each bar's width from its <strong>data-w attribute</strong> (e.g. "82.8"). The CSS <strong>transition</strong> property smoothly animates from 0% → 82.8% over 0.8 seconds. That's the fill animation you see.</div>
+      </div>
+      <div class="code-block"><span class="cm">/* CSS — transition defined in &lt;style&gt; */</span>
+.mr-fill {
+  width: <span class="num">0%</span>;                            <span class="cm">/* starts invisible */</span>
+  <span class="kw">transition</span>: width <span class="num">0.8s</span> cubic-bezier(.4,0,.2,1);  <span class="cm">/* smooth ease-out */</span>
+}
+.mr.winner .mr-fill { background: var(--purple); }  <span class="cm">/* winner = purple */</span>
+
+<span class="cm">// JavaScript — in buildPanel()</span>
+<span class="fn">setTimeout</span>(() => {
+  panel.<span class="fn">querySelectorAll</span>(<span class="str">'.mr-fill'</span>).<span class="fn">forEach</span>(el => {
+    el.style.width = el.<span class="fn">getAttribute</span>(<span class="str">'data-w'</span>) + <span class="str">'%'</span>;
+    <span class="cm">// sets e.g. "82.8%" → CSS transition plays automatically</span>
+  });
+}, <span class="num">80</span>);  <span class="cm">// 80ms wait for DOM to paint first</span>
+
+<span class="cm">// The 6-class breakdown bars work the same way</span>
+<span class="cm">// but use 200ms delay and .cp-fill class</span></div>
+      <div class="important-box imp-blue">
+        <div class="imp-title">Why the 80ms delay?</div>
+        If you set style.width immediately after setting innerHTML, the browser hasn't painted the elements yet. The transition has nothing to "from" — the bars jump to their final width instantly with no animation. The 80ms gives the browser one render frame to establish the 0% starting state, so the transition has a clean start point.
+      </div>
+      <div class="returns-box">
+        <div class="ret-title">Complete flow summary</div>
+        <div class="ret-row"><div class="ret-key">Total round trip time</div><div class="ret-val">~2–4 seconds (dominated by XLM-RoBERTa inference on CPU)</div></div>
+        <div class="ret-row"><div class="ret-key">Files involved</div><div class="ret-val">index.html → app.py → predict.py → back to index.html</div></div>
+        <div class="ret-row"><div class="ret-key">Models called</div><div class="ret-val">12 total: LR + SVM + XGBoost + XLM-R × 3 datasets</div></div>
+        <div class="ret-row"><div class="ret-key">Winner selection</div><div class="ret-val">Highest confidence per dataset — pure Python max()</div></div>
+        <div class="ret-row"><div class="ret-key">Risk flag</div><div class="ret-val">Majority vote — ≥3 of 4 Dataset 3 models predict "suicide"</div></div>
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="goTo(8)">← render()</button>
+        <button class="nav-btn" onclick="goTo(0)">↑ Start over</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function goTo(n) {
+  document.querySelectorAll('.step-content').forEach((el,i) => {
+    el.classList.toggle('active', i === n);
+  });
+  document.querySelectorAll('.step-btn').forEach((el,i) => {
+    el.classList.toggle('active', i === n);
+  });
+  document.querySelector('.main').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

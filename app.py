@@ -57,6 +57,11 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/flow')
+def flow():
+    return render_template('flow_diagram.html')
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
