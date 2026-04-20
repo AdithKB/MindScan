@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MindScan — Multi-Model Framework for Depression & Suicide Risk Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5f0; --bg2:#efece8; --bg3:#e6e2da; --bg4:#dedad1;
+  --ink:#1a1816; --ink2:#5c5750; --ink3:#9c9790;
+  --border:rgba(26,24,22,0.09); --border2:rgba(26,24,22,0.16);
+  --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-mid:#3b82f6;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-mid:#d97706;
+  --red:#b91c1c; --red-bg:#fef2f2;
+  --green:#15803d; --green-bg:#f0fdf4;
+  --purple:#6d28d9; --purple-bg:#f5f3ff;
+  --shadow:0 1px 3px rgba(26,24,22,0.06),0 4px 16px rgba(26,24,22,0.04);
+  --shadow-md:0 2px 8px rgba(26,24,22,0.08),0 8px 32px rgba(26,24,22,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* ── HEADER ── */
+header{
+  padding:16px 48px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);background:rgba(247,245,240,0.94);
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;background:var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:14px;height:14px}
+.logo-txt{font-family:'Instrument Serif',serif;font-size:18px;letter-spacing:-.02em}
+.logo-txt em{font-style:italic;color:var(--ink2)}
+.nav-links{display:flex;gap:2px}
+.nav-links a{font-size:12px;color:var(--ink2);padding:5px 10px;border-radius:6px;text-decoration:none;transition:all .15s;font-family:'DM Mono',monospace}
+.nav-links a:hover{background:var(--bg2);color:var(--ink)}
+.nav-badge{font-size:10px;font-family:'DM Mono',monospace;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(180,83,9,.2);padding:4px 10px;border-radius:20px}
+
+/* ── HERO ── */
+.hero{padding:80px 48px 64px;max-width:1040px;margin:0 auto}
+.hero-top{display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:start;margin-bottom:52px}
+.hero-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.eyebrow-txt{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(28px,3.6vw,42px);font-weight:400;line-height:1.13;letter-spacing:-.03em;color:var(--ink);margin-bottom:18px}
+.hero h1 em{font-style:italic;color:var(--ink2)}
+.hero-sub{font-size:15px;color:var(--ink2);line-height:1.7;margin-bottom:24px;max-width:500px}
+
+/* RQ Cards */
+.rq-cards{display:flex;flex-direction:column;gap:10px}
+.rq-card{border-radius:12px;padding:16px 18px;border:1px solid}
+.rq-card.rq1{background:var(--blue-bg);border-color:rgba(29,78,216,.2)}
+.rq-card.rq2{background:var(--amber-bg);border-color:rgba(180,83,9,.2)}
+.rq-label{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;font-weight:500;margin-bottom:5px}
+.rq-card.rq1 .rq-label{color:var(--blue)}
+.rq-card.rq2 .rq-label{color:var(--amber)}
+.rq-text{font-size:13px;color:var(--ink);line-height:1.5}
+
+/* Stats panel */
+.stats-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;box-shadow:var(--shadow)}
+.stat-box{text-align:center;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.stat-num{font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.02em;color:var(--ink);line-height:1}
+.stat-lbl{font-size:10px;font-family:'DM Mono',monospace;color:var(--ink3);margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+
+/* ── SECTION SHARED ── */
+.section{max-width:1040px;margin:0 auto;padding:64px 48px}
+.sec-eyebrow{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.sec-h2{font-family:'Instrument Serif',serif;font-size:clamp(24px,3.5vw,38px);font-weight:400;letter-spacing:-.02em;line-height:1.15;margin-bottom:8px}
+.sec-h2 em{font-style:italic;color:var(--ink2)}
+.sec-lead{font-size:14px;color:var(--ink2);max-width:560px;line-height:1.7;margin-bottom:36px}
+.section-divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* ── METHODOLOGY 3-STEP ── */
+.method-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+.method-steps::before{content:'';position:absolute;top:22px;left:22px;right:22px;height:2px;background:var(--bg3);z-index:0}
+.method-step{text-align:center;position:relative;z-index:2;padding:0 20px;cursor:pointer;transition:opacity .15s}
+.method-step:hover{opacity:.8}
+.ms-dot{width:44px;height:44px;border-radius:50%;background:var(--ink);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:12px;font-family:'DM Mono',monospace;color:#fff;transition:background .2s,border-color .2s}
+.method-step.active .ms-dot{background:var(--blue);border-color:var(--blue)}
+.ms-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:7px}
+.ms-body{font-size:12px;color:var(--ink2);line-height:1.65}
+.ms-crisp{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:10px}
+.ms-crisp-tag{font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:3px;background:var(--bg2);border:1px solid var(--border);color:var(--ink3);letter-spacing:.05em}
+/* Detail panel */
+.method-detail{margin-top:32px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px 32px;box-shadow:var(--shadow);animation:fadeUp .25s ease both}
+.md-panel{display:none}
+.md-panel.active{display:block}
+.md-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.md-title-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.md-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.md-block{padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+.md-block-lbl{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.md-block-val{font-size:12px;color:var(--ink);line-height:1.6}
+.md-block-val strong{color:var(--red)}
+.md-block-val em{color:var(--blue);font-style:normal;font-weight:500}
+
+/* ── EVIDENCE MATRIX ── */
+.matrix-wrap{overflow-x:auto;margin-top:28px}
+.matrix-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.matrix-tbl th{text-align:center;padding:11px 16px;background:var(--bg2);border-bottom:2px solid var(--border2);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500}
+.matrix-tbl th:first-child{text-align:left;min-width:200px}
+.matrix-tbl td{padding:12px 16px;border-bottom:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink2);vertical-align:middle}
+.matrix-tbl td:first-child{text-align:left;font-family:'Geist',sans-serif;font-size:13px;color:var(--ink)}
+.matrix-tbl tr:hover td{background:var(--bg2)}
+.matrix-tbl tr:last-child td{border-bottom:none}
+.matrix-tbl td.winner{font-weight:600;color:var(--ink)}
+.matrix-tbl td.collapsed{background:rgba(185,28,28,.07);color:var(--red)}
+.ds-label{display:inline-flex;align-items:center;gap:8px}
+.ds-badge{font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:3px;font-weight:500;flex-shrink:0}
+
+/* ── MATRIX FOOTNOTE ── */
+.matrix-footnote{margin-top:14px;font-size:11px;color:var(--ink3);line-height:1.6;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;font-family:'DM Mono',monospace}
+.matrix-footnote strong{color:var(--ink2)}
+
+/* ── FINDINGS ── */
+.findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.finding{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
+.finding-n{font-family:'Instrument Serif',serif;font-size:36px;color:var(--bg3);line-height:1;margin-bottom:8px}
+.finding-t{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.finding-b{font-size:12px;color:var(--ink2);line-height:1.65}
+.finding-chip{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;background:var(--bg2);border:1px solid var(--border);padding:3px 8px;border-radius:4px;margin-top:8px;color:var(--ink2)}
+
+/* ── VERDICT ── */
+.verdict-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.verdict-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.verdict-card.rq{border-left:3px solid var(--blue-mid)}
+.verdict-card.lim{border-left:3px solid var(--amber-mid)}
+.vc-eyebrow{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;font-weight:500}
+.verdict-card.rq .vc-eyebrow{color:var(--blue)}
+.verdict-card.lim .vc-eyebrow{color:var(--amber)}
+.vc-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.vc-body{font-size:12px;color:var(--ink2);line-height:1.65}
+.vc-chip{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;background:var(--blue-bg);border:1px solid rgba(29,78,216,.2);color:var(--blue);padding:3px 8px;border-radius:4px;margin-top:8px}
+.verdict-card.lim .vc-chip{background:var(--amber-bg);border-color:rgba(180,83,9,.2);color:var(--amber)}
+
+/* ── DEMO ── */
+.demo-section{max-width:1040px;margin:0 auto;padding:64px 48px}
+.input-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
+textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;
+  padding:13px 15px;font-family:'Geist',sans-serif;font-size:14px;color:var(--ink);
+  resize:vertical;min-height:100px;outline:none;line-height:1.6;transition:border-color .15s,box-shadow .15s;
+}
+textarea:focus{border-color:rgba(29,78,216,.4);box-shadow:0 0 0 3px rgba(29,78,216,.07)}
+textarea::placeholder{color:var(--ink3)}
+.input-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
+.char-count{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)}
+.samples{display:flex;gap:5px;flex-wrap:wrap}
+.sbtn{font-size:10px;font-family:'DM Mono',monospace;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:5px 10px;cursor:pointer;color:var(--ink2);transition:all .15s}
+.sbtn:hover{border-color:var(--border2);color:var(--ink)}
+.sbtn.danger{border-color:rgba(185,28,28,.25);color:var(--red);background:var(--red-bg);display:flex;align-items:center;gap:5px}
+.sbtn-pulse{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.5s infinite}
+.run-btn{
+  width:100%;margin-top:12px;background:var(--ink);color:#fff;border:none;
+  border-radius:9px;padding:13px 24px;font-family:'Geist',sans-serif;font-size:14px;
+  font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;transition:opacity .15s,transform .1s;letter-spacing:-.01em;
+}
+.run-btn:hover{opacity:.87}
+.run-btn:active{transform:scale(.99)}
+.run-btn:disabled{opacity:.45;cursor:not-allowed}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.disclaimer{font-size:11px;color:var(--ink3);line-height:1.6;padding:10px 14px;background:var(--amber-bg);border:1px solid rgba(180,83,9,.15);border-radius:7px;margin-bottom:20px}
+
+/* Results */
+.results{display:none;animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.risk-banner{border-radius:10px;padding:14px 18px;margin-bottom:16px;border:1px solid;display:flex;align-items:flex-start;gap:12px}
+.risk-banner.danger{background:var(--red-bg);border-color:rgba(185,28,28,.25)}
+.risk-banner.safe{background:var(--green-bg);border-color:rgba(21,128,61,.2)}
+.rb-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.rb-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.rb-body{font-size:12px;line-height:1.55;color:var(--ink2)}
+.risk-banner.danger .rb-title{color:var(--red)}
+.risk-banner.safe .rb-title{color:var(--green)}
+.masked-callout{background:var(--amber-bg);border:1px solid rgba(180,83,9,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:none;animation:fadeUp .3s ease both}
+.mc-callout-title{font-size:13px;font-weight:500;color:var(--amber);margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.mc-callout-body{font-size:12px;color:#92400e;line-height:1.6}
+
+.results-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.results-hdr-title{font-size:14px;font-weight:500;color:var(--ink)}
+.elapsed-chip{font-size:10px;font-family:'DM Mono',monospace;color:var(--ink3);background:var(--bg2);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+.winner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.win-card{border-radius:12px;padding:18px;border:1px solid;animation:fadeUp .4s ease both;background:#fff;box-shadow:var(--shadow);transition:all .3s ease}
+.win-card.d1{border-color:rgba(29,78,216,.2);animation-delay:.14s}
+.win-card.d2{border-color:rgba(180,83,9,.2);animation-delay:.07s}
+.win-card.d3{border-color:rgba(185,28,28,.2)}
+/* D3 dominant state when suicide risk is flagged */
+.win-card.d3.risk-active{
+  border-color:var(--red);border-width:2px;
+  background:var(--red-bg);box-shadow:0 0 0 4px rgba(185,28,28,.08),var(--shadow-md);
+}
+.win-card.d3.risk-active .wc-pred{color:var(--red)}
+.wc-lbl{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;line-height:1.5}
+.win-card.d1 .wc-lbl{color:var(--blue)}
+.win-card.d2 .wc-lbl{color:var(--amber)}
+.win-card.d3 .wc-lbl{color:var(--red)}
+.wc-pred{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.02em;color:var(--ink);margin-bottom:6px;min-height:48px;display:flex;align-items:flex-end}
+.conf-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.conf-track{flex:1;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);width:0}
+.win-card.d1 .conf-fill{background:var(--blue-mid)}
+.win-card.d2 .conf-fill{background:var(--amber-mid)}
+.win-card.d3 .conf-fill{background:var(--red)}
+.conf-pct{font-size:11px;font-family:'DM Mono',monospace;min-width:34px;text-align:right}
+.win-card.d1 .conf-pct{color:var(--blue)}
+.win-card.d2 .conf-pct{color:var(--amber)}
+.win-card.d3 .conf-pct{color:var(--red)}
+.win-card.d3.risk-active .conf-pct{font-size:14px;font-weight:500}
+.wc-meta{font-size:11px;color:var(--ink3)}
+/* Clinical Insight Alert */
+.clinical-insight{background:var(--amber-bg);border:1px solid rgba(180,83,9,.2);border-left:3px solid var(--amber-mid);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:none;animation:fadeUp .3s ease both}
+.ci-title{font-size:13px;font-weight:500;color:var(--amber);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.ci-body{font-size:12px;color:#92400e;line-height:1.65}
+
+footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);line-height:1.9}
+@media(max-width:768px){
+  header,.section,.demo-section,footer{padding-left:20px;padding-right:20px}
+  .hero{padding:48px 20px 40px}
+  .hero-top,.findings-grid,.winner-grid{grid-template-columns:1fr}
+  .method-steps{grid-template-columns:1fr;gap:24px}
+  .method-steps::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="5.5" stroke="white" stroke-width="1.3"/>
+        <path d="M5 7c0-1.2.8-2 2-2s2 .8 2 2-.8 2-2 2" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="7" cy="7" r="1.2" fill="white"/>
+      </svg>
+    </div>
+    <div class="logo-txt">Mind<em>Scan</em></div>
+  </div>
+  <nav class="nav-links">
+    <a href="#methodology">Methodology</a>
+    <a href="#matrix">Evidence Matrix</a>
+    <a href="#findings">Findings</a>
+    <a href="#verdict">Conclusions</a>
+    <a href="#demo">Live Demo</a>
+  </nav>
+  <div class="nav-badge">NCI H9DAI 2026</div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div>
+      <div class="hero-eyebrow"><div class="eyebrow-dot"></div><span class="eyebrow-txt">Mental health NLP research · NCI H9DAI</span></div>
+      <h1>Multi-Model Framework for Depression Classification and <em>Suicide Risk Detection</em> from Social Media Text</h1>
+      <p class="hero-sub">A parallel ensemble of 12 classifiers across 3 clinical datasets — extending Tumaliuan et al. (2024) with modern transformers and SMOTE balancing.</p>
+      <div class="rq-cards">
+        <div class="rq-card rq1">
+          <div class="rq-label">RQ1</div>
+          <div class="rq-text">Which machine learning model provides the highest Accuracy for identifying depression and suicide risk?</div>
+        </div>
+        <div class="rq-card rq2">
+          <div class="rq-label">RQ2</div>
+          <div class="rq-text">Does training on the full dataset (232K), a half split (116K), or a sample (50K) provide a significant boost in Accuracy?</div>
+        </div>
+      </div>
+    </div>
+    <div class="stats-panel">
+      <div class="stat-box"><div class="stat-num" data-target="3" data-suffix="">0</div><div class="stat-lbl">Datasets</div></div>
+      <div class="stat-box"><div class="stat-num" data-target="12" data-suffix="">0</div><div class="stat-lbl">Models trained</div></div>
+      <div class="stat-box"><div class="stat-num" data-target="99.9" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">Best Accuracy</div></div>
+      <div class="stat-box"><div class="stat-num" data-target="98.1" data-suffix="%" data-dec="1">0</div><div class="stat-lbl">D3 Best Accuracy</div></div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- METHODOLOGY -->
+<section class="section" id="methodology">
+  <div class="sec-eyebrow">Methodology</div>
+  <div class="sec-h2">Three-step <em>pipeline</em></div>
+  <p class="sec-lead">CRISP-DM applied across all three datasets — from raw social media text to parallel ensemble predictions.</p>
+
+  <div class="method-steps">
+    <div class="method-step active" onclick="showMethodDetail(0)">
+      <div class="ms-dot">01</div>
+      <div class="ms-title">Data</div>
+      <div class="ms-body">3 clinical datasets spanning Twitter and Reddit, covering depression types, binary detection, and suicide risk.</div>
+      <div class="ms-crisp"><span class="ms-crisp-tag">CRISP-DM 1: Business Understanding</span><span class="ms-crisp-tag">CRISP-DM 2: Data Understanding</span></div>
+    </div>
+    <div class="method-step" onclick="showMethodDetail(1)">
+      <div class="ms-dot">02</div>
+      <div class="ms-title">Preprocessing</div>
+      <div class="ms-body">6-stage text cleaning pipeline + SMOTE oversampling to address class imbalance left unresolved by the base paper.</div>
+      <div class="ms-crisp"><span class="ms-crisp-tag">CRISP-DM 3: Data Preparation</span></div>
+    </div>
+    <div class="method-step" onclick="showMethodDetail(2)">
+      <div class="ms-dot">03</div>
+      <div class="ms-title">Modelling</div>
+      <div class="ms-body">Parallel ensemble of 12 classifiers — all run independently on every prediction, never as a sequential cascade.</div>
+      <div class="ms-crisp"><span class="ms-crisp-tag">CRISP-DM 4: Modelling</span><span class="ms-crisp-tag">CRISP-DM 5: Evaluation</span><span class="ms-crisp-tag">CRISP-DM 6: Deployment</span></div>
+    </div>
+  </div>
+
+  <div class="method-detail">
+    <!-- Panel 0: Data -->
+    <div class="md-panel active" id="mdp0">
+      <div class="md-title"><div class="md-title-dot"></div>Dataset Overview</div>
+      <div class="md-grid">
+        <div class="md-block">
+          <div class="md-block-lbl">D1 — Depression Types (Zenodo 14233292)</div>
+          <div class="md-block-val"><em>14,983 tweets · 6 classes</em> — Postpartum (3,746), Major Depressive (2,517), Bipolar (2,443), Psychotic (2,312), No Depression (1,985), Atypical (1,980). Psychiatrist-verified labels. Class imbalance ratio: 1.89×.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">D2 — Binary Depression (Kaggle: albertobellardini)</div>
+          <div class="md-block-val"><em>10,314 tweets · 2 classes</em> — Not Depressed (8,000) / Depressed (2,314). Severe class imbalance: <strong>3.46×</strong>. Twitter short-form text. SMOTE applied to training set (8,251 → 12,800 samples). Trained on Twitter affect patterns — may underdetect atypical presentations.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">D3 — Suicide Risk (Kaggle: nikhileswarkomati)</div>
+          <div class="md-block-val"><em>232,074 Reddit posts · 2 classes</em> — Suicide / Non-Suicide (perfectly balanced, 116,037 each). Suicide posts average <em>212 words</em> (mean), non-suicide posts 63 words. We sample <em>50K posts</em> and compare against full/half splits to answer RQ2.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">Business Context</div>
+          <div class="md-block-val">A clinically-motivated framework for social media monitoring — applicable to platform-level moderation, mental health triage, and early intervention systems. Complements rather than replaces clinical assessment.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Panel 1: Preprocessing -->
+    <div class="md-panel" id="mdp1">
+      <div class="md-title"><div class="md-title-dot"></div>Preprocessing Pipeline</div>
+      <div class="md-grid">
+        <div class="md-block">
+          <div class="md-block-lbl">6-Stage Text Cleaning</div>
+          <div class="md-block-val">1. Lowercase · 2. Strip URLs &amp; http links · 3. Remove @mentions · 4. Remove # symbols · 5. Strip punctuation · 6. Collapse whitespace. Applied identically across all three datasets for consistency.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">SMOTE — Synthetic Oversampling</div>
+          <div class="md-block-val">Applied to D1 and D2 training sets only (D3 is pre-balanced). D1: 11,986 → <em>17,982 samples</em>. D2: 8,251 → <em>12,800 samples</em>. Creates synthetic clinical neighbours in TF-IDF feature space. Directly addresses the base paper's (Tumaliuan 2024) biggest limitation — they trained on raw imbalanced data.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">Feature Extraction — Classical Models</div>
+          <div class="md-block-val">TF-IDF vectoriser with unigrams + bigrams, fitted per-dataset on training data only. Captures frequency-weighted term co-occurrence patterns, well-suited for short Twitter text.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">Feature Extraction — Transformers</div>
+          <div class="md-block-val">XLM-RoBERTa tokeniser (max 128 tokens D1/D2, 256 tokens D3) with padding. Pre-trained multilingual contextual embeddings capture semantic meaning and long-range dependencies — critical for Reddit's longer posts.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Panel 2: Modelling -->
+    <div class="md-panel" id="mdp2">
+      <div class="md-title"><div class="md-title-dot"></div>Ensemble Strategy &amp; Architecture</div>
+      <div class="md-grid">
+        <div class="md-block">
+          <div class="md-block-lbl">4 Models per Dataset (12 total)</div>
+          <div class="md-block-val"><em>Logistic Regression</em> — L2 regularised, max_iter=1000. <em>SVM</em> — LinearSVC, C=1.0. <em>XGBoost</em> — 300 estimators, max_depth=6. <em>XLM-RoBERTa</em> — fine-tuned multilingual transformer, <em>278M parameters</em>, lr=2e-5, 3 epochs.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">Parallel Architecture — Clinical Rationale</div>
+          <div class="md-block-val">All 12 models run simultaneously on every input. A sequential design (check depression first, then suicide risk) would <strong>miss masked suicidality</strong> — a clinically documented pre-crisis pattern where affect appears normal but intent is resolved. Parallelism is a safety requirement, not a design preference.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">XGBoost Algorithm Collapse</div>
+          <div class="md-block-val">XGBoost accuracy on D3: <em>91.6% (50K sample) → 70.5% (Full 232K) → 60.1% (H1 116K)</em>. Performance degrades as training data grows. The H1/H2 results are also inconsistent (60.1% vs 71.0%) — gradient boosting is highly sensitive to data distribution shifts at this scale, making it unreliable for large Reddit corpora.</div>
+        </div>
+        <div class="md-block">
+          <div class="md-block-lbl">D3 Split Study (RQ2)</div>
+          <div class="md-block-val">D3 trained on 4 configurations: Full (232K), Half 1 (116K), Half 2 (116K), Sample (50K). XLM-RoBERTa accuracy: <em>98.1% (50K) → 97.8% (H1) → 98.0% (H2/Full)</em>. Δ = 0.3% across 4× more data. Kolmogorov-Smirnov tests confirm all splits share identical distributions (p &gt; 0.49), validating the comparison.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ACCURACY EVIDENCE MATRIX -->
+<section class="section" id="matrix">
+  <div class="sec-eyebrow">Core evaluation</div>
+  <div class="sec-h2">Accuracy <em>Evidence Matrix</em></div>
+  <p class="sec-lead">All 4 models evaluated across all dataset splits. <strong>Bold</strong> = winner per row. <span style="color:var(--red)">Red</span> = XGBoost collapse on larger training sets.</p>
+
+  <div class="matrix-wrap">
+    <table class="matrix-tbl">
+      <thead>
+        <tr>
+          <th>Dataset / Split</th>
+          <th>Logistic Regression</th>
+          <th>SVM</th>
+          <th>XGBoost</th>
+          <th>XLM-RoBERTa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--blue-bg);color:var(--blue)">D1</span> Depression Types</div></td>
+          <td>91.5%</td>
+          <td class="winner">92.4%</td>
+          <td>91.8%</td>
+          <td>90.5%</td>
+        </tr>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--amber-bg);color:var(--amber)">D2</span> Binary Depression</div></td>
+          <td>98.9%</td>
+          <td>97.1%</td>
+          <td>99.3%</td>
+          <td class="winner">99.9%</td>
+        </tr>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--red-bg);color:var(--red)">D3</span> Full (232K)</div></td>
+          <td>94.3%</td>
+          <td>94.6%</td>
+          <td class="collapsed">70.5%</td>
+          <td class="winner">98.0%</td>
+        </tr>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--blue-bg);color:var(--blue)">D3</span> Half 1 (116K)</div></td>
+          <td>93.8%</td>
+          <td>94.2%</td>
+          <td class="collapsed">60.1%</td>
+          <td class="winner">97.8%</td>
+        </tr>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--amber-bg);color:var(--amber)">D3</span> Half 2 (116K)</div></td>
+          <td>93.7%</td>
+          <td>94.2%</td>
+          <td class="collapsed">71.0%</td>
+          <td class="winner">98.0%</td>
+        </tr>
+        <tr>
+          <td><div class="ds-label"><span class="ds-badge" style="background:var(--green-bg);color:var(--green)">D3</span> Sample (50K) ★</div></td>
+          <td>93.2%</td>
+          <td>93.7%</td>
+          <td>91.6%</td>
+          <td class="winner">98.1%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="matrix-footnote"><strong>Note:</strong> Full performance evaluation including Macro F1-Score, Cohen's Kappa, and per-class metrics are documented in the Final IEEE Report. Accuracy is shown here as the primary comparative metric for cross-dataset validation.</p>
+</section>
+
+<hr class="section-divider">
+
+<!-- FINDINGS -->
+<section class="section" id="findings">
+  <div class="sec-eyebrow">Key findings</div>
+  <div class="sec-h2">What the results <em>show</em></div>
+  <p class="sec-lead">Four insights that directly answer the research questions.</p>
+
+  <div class="findings-grid">
+    <div class="finding">
+      <div class="finding-n">01</div>
+      <div class="finding-t">SVM is the best model for short-form text</div>
+      <div class="finding-b">On 6-class depression type classification (D1), SVM achieves the highest Accuracy of 92.4%. Tweets average 31 words — too short for transformer contextual embeddings to gain advantage over TF-IDF bigrams.</div>
+      <div class="finding-chip">D1 Accuracy: SVM 92.4%</div>
+    </div>
+    <div class="finding">
+      <div class="finding-n">02</div>
+      <div class="finding-t">XLM-RoBERTa is the best model for long-form text</div>
+      <div class="finding-b">On Reddit suicide risk posts (D3), XLM-RoBERTa achieves 98.1% Accuracy with the 50K sample. Suicide posts average 212 words — rich enough context for transformer embeddings to dominate every competitor. D2 (Twitter, ~31 words) tells the opposite story.</div>
+      <div class="finding-chip">D3 Accuracy: XLM-RoBERTa 98.1%</div>
+    </div>
+    <div class="finding">
+      <div class="finding-n">03</div>
+      <div class="finding-t">Increasing data size provided no significant gain</div>
+      <div class="finding-b">Scaling from 50K to 232K samples produced only a 0.1% change in XLM-RoBERTa Accuracy (98.1% → 98.0%). Adding 182,000 more training examples gave no meaningful improvement, validating the 50K sample.</div>
+      <div class="finding-chip">50K → 232K: Δ Accuracy = 0.1%</div>
+    </div>
+    <div class="finding">
+      <div class="finding-n">04</div>
+      <div class="finding-t">Parallel models detect "Masked Suicidality"</div>
+      <div class="finding-b">A text can be classified as "Not Depressed" on D2 while flagging high suicide risk on D3 — clinically documented calm, resolved language before a crisis. A sequential pipeline that gates suicide detection behind depression detection would miss these cases entirely.</div>
+      <div class="finding-chip">Try Sample 3 in the demo</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- CONCLUSIONS & VERDICT -->
+<section class="section" id="verdict">
+  <div class="sec-eyebrow">Conclusions</div>
+  <div class="sec-h2">Research <em>verdict</em></div>
+  <p class="sec-lead">Direct answers to both research questions, and the key limitations of the study.</p>
+
+  <div class="verdict-grid">
+    <div class="verdict-card rq">
+      <div class="vc-eyebrow">RQ1 — Best model</div>
+      <div class="vc-title">No single model wins across all tasks</div>
+      <div class="vc-body">SVM (92.4%) wins on short-form Twitter text (D1) where TF-IDF bigrams capture enough signal. XLM-RoBERTa wins on long-form Reddit posts (D2: 99.9%, D3: 98.1%) where contextual embeddings dominate. Model selection must be text-length aware.</div>
+      <div class="vc-chip">SVM for short text · XLM-RoBERTa for long text</div>
+    </div>
+    <div class="verdict-card rq">
+      <div class="vc-eyebrow">RQ2 — Dataset size</div>
+      <div class="vc-title">More data gave no meaningful gain</div>
+      <div class="vc-body">Scaling from 50K to 232K training samples produced only a 0.1% change in XLM-RoBERTa Accuracy (98.1% → 98.0%). For this task and model, the 50K sample captures the full signal — there is no statistically significant benefit from 4× more data.</div>
+      <div class="vc-chip">50K sample is sufficient · Δ = 0.1%</div>
+    </div>
+    <div class="verdict-card lim">
+      <div class="vc-eyebrow">Limitation 1 — D2 training distribution</div>
+      <div class="vc-title">D2 detects Twitter-style depressive affect only</div>
+      <div class="vc-body">D2 (Binary Depression) was trained on short Twitter posts expressing classic depressive sentiment. It may produce false negatives for long-form, atypical, or psychotic presentations that do not match the Twitter affect profile — as demonstrated by Sample 2 (psychotic) returning "Not Depressed."</div>
+      <div class="vc-chip">Affect Mismatch — see demo Sample 2</div>
+    </div>
+    <div class="verdict-card lim">
+      <div class="vc-eyebrow">Limitation 2 — Masked suicidality</div>
+      <div class="vc-title">Parallel monitoring is necessary, not optional</div>
+      <div class="vc-body">A person may show low depressive affect (D2: Not Depressed) while exhibiting high-resolution, intentional language consistent with pre-crisis planning (D3: Suicide Risk). A sequential pipeline gating D3 behind D2 would silently miss these cases — the parallel architecture is the only correct design.</div>
+      <div class="vc-chip">Masked suicidality — see demo Sample 3</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- LIVE DEMO -->
+<div class="demo-section" id="demo">
+  <div class="sec-eyebrow">Live inference</div>
+  <div class="sec-h2" style="margin-bottom:8px">Try it — <em>winner model per task</em></div>
+  <p class="sec-lead" style="margin-bottom:24px">Sample 3 demonstrates masked suicidality — the key clinical finding of the project.</p>
+
+  <div class="disclaimer"><strong>Research prototype only.</strong> Not a clinical tool. If you or someone you know is in crisis, please contact a mental health professional or emergency services immediately.</div>
+
+  <div class="input-card">
+    <textarea id="textInput" placeholder="Enter any text — tweet, Reddit post, or sentence..."></textarea>
+    <div class="input-foot">
+      <div class="char-count" id="charCount">0 characters</div>
+      <div class="samples">
+        <button class="sbtn" onclick="loadSample(0)">Sample 1 — Postpartum</button>
+        <button class="sbtn" onclick="loadSample(1)">Sample 2 — Psychotic</button>
+        <button class="sbtn danger" onclick="loadSample(2)"><div class="sbtn-pulse"></div>Sample 3 — Masked risk</button>
+        <button class="sbtn" onclick="loadSample(3)">Sample 4 — No issue</button>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="runAnalysis()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnTxt">Run analysis</span>
+    </button>
+  </div>
+
+  <div class="results" id="results">
+    <div class="risk-banner" id="riskBanner">
+      <div class="rb-icon" id="rbIcon"></div>
+      <div><div class="rb-title" id="rbTitle"></div><div class="rb-body" id="rbBody"></div></div>
+    </div>
+
+    <!-- Clinical Insight Alert — shown when patterns warrant clinical interpretation -->
+    <div class="clinical-insight" id="clinicalInsight">
+      <div class="ci-title" id="ciTitle"></div>
+      <div class="ci-body" id="ciBody"></div>
+    </div>
+
+    <div class="results-hdr">
+      <div class="results-hdr-title">Analysis results</div>
+      <div class="elapsed-chip" id="elapsed"></div>
+    </div>
+
+    <!-- Cards ordered D3 → D2 → D1 (safety-first triage) -->
+    <div class="winner-grid" id="winnerGrid">
+      <div class="win-card d3" id="cardD3">
+        <div class="wc-lbl">D3 — Immediate Risk · XLM-RoBERTa</div>
+        <div class="wc-pred" id="wpC">—</div>
+        <div class="conf-row"><div class="conf-track"><div class="conf-fill" id="wbC"></div></div><div class="conf-pct" id="wcC">—</div></div>
+        <div class="wc-meta">98.1% Accuracy on D3</div>
+      </div>
+      <div class="win-card d2" id="cardD2">
+        <div class="wc-lbl">D2 — Depressed? · XLM-RoBERTa</div>
+        <div class="wc-pred" id="wpB">—</div>
+        <div class="conf-row"><div class="conf-track"><div class="conf-fill" id="wbB"></div></div><div class="conf-pct" id="wcB">—</div></div>
+        <div class="wc-meta">99.9% Accuracy on D2</div>
+      </div>
+      <div class="win-card d1" id="cardD1">
+        <div class="wc-lbl">D1 — Depression type · SVM</div>
+        <div class="wc-pred" id="wpA">—</div>
+        <div class="conf-row"><div class="conf-track"><div class="conf-fill" id="wbA"></div></div><div class="conf-pct" id="wcA">—</div></div>
+        <div class="wc-meta">92.4% Accuracy on D1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  MindScan · NCI H9DAI Research Project 2026 · Academic Prototype Only<br>
+  Datasets: Zenodo 14233292 · Kaggle albertobellardini · Kaggle nikhileswarkomati<br>
+  Not for clinical use · MSc Artificial Intelligence coursework
+</footer>
+
+<script>
+// ── METHODOLOGY PANEL SWITCH ──────────────────────────────────────
+function showMethodDetail(idx){
+  document.querySelectorAll('.method-step').forEach((s,i)=>{
+    s.classList.toggle('active',i===idx);
+  });
+  document.querySelectorAll('.md-panel').forEach((p,i)=>{
+    p.classList.toggle('active',i===idx);
+  });
+  // re-trigger animation
+  const det=document.querySelector('.method-detail');
+  det.style.animation='none';
+  requestAnimationFrame(()=>{det.style.animation=''});
+}
+
+// ── COUNTER ANIMATION ─────────────────────────────────────────────
+function animateCounters(){
+  document.querySelectorAll('.stat-num[data-target]').forEach(el=>{
+    const target=parseFloat(el.getAttribute('data-target'));
+    const dec=parseInt(el.getAttribute('data-dec')||'0');
+    const suffix=el.getAttribute('data-suffix')||'';
+    const duration=1400;
+    const start=performance.now();
+    function step(now){
+      const p=Math.min((now-start)/duration,1);
+      const ease=1-Math.pow(1-p,3);
+      const val=target*ease;
+      el.textContent=(dec>0?val.toFixed(dec):Math.floor(val))+suffix;
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+window.addEventListener('load',()=>setTimeout(animateCounters,300));
+
+// ── SAMPLES ───────────────────────────────────────────────────────
+const SAMPLES=[
+  "I been going through depression after having my baby. I didn't even realise it till recently. I always said I'm strong but your emotions change, your body changes. I need time.",
+  "The universe is sending me signals I should follow. I know it's the psychosis. I know it isn't real. But it feels so real every single day.",
+  "I've sorted everything out. Told my friends I love them. Finally feel at peace with my decision. I'm not sad anymore — just ready.",
+  "Had such a great day today! Went hiking with friends and saw the most amazing sunset. Feeling really grateful and happy to be alive."
+];
+const ta=document.getElementById('textInput');
+ta.addEventListener('input',()=>document.getElementById('charCount').textContent=ta.value.length+' characters');
+function loadSample(i){ta.value=SAMPLES[i];document.getElementById('charCount').textContent=ta.value.length+' characters'}
+
+
+// ── RUN ANALYSIS ──────────────────────────────────────────────────
+async function runAnalysis(){
+  const text=ta.value.trim();if(!text)return;
+  const btn=document.getElementById('runBtn');
+  const sp=document.getElementById('spinner');
+  const bt=document.getElementById('btnTxt');
+  btn.disabled=true;sp.style.display='block';bt.textContent='Running models...';
+  document.getElementById('results').style.display='none';
+  try{
+    const r=await fetch('/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    const d=await r.json();
+    if(!r.ok){alert('Error: '+(d.error||'failed'));return}
+    render(d);
+  }catch(e){
+    alert('Cannot reach the inference backend. The HuggingFace Space may be waking up — wait 30 seconds and try again.');
+  }finally{
+    btn.disabled=false;sp.style.display='none';bt.textContent='Run analysis';
+  }
+}
+
+function render(d){
+  const d1res = d.dataset1.models['SVM'];
+  const d2res = d.dataset2.models['XLM-RoBERTa'];
+  const d3res = d.dataset3.models['XLM-RoBERTa'];
+  const d1Label = d1res.label.toLowerCase();
+  const d2Label = d2res.label.toLowerCase();
+  const d3Label = d3res.label.toLowerCase();
+  const isRisk  = d.risk_flag;
+  const notDepressed = d2Label.includes('not');
+  // "no depression" may come back as "no" from some model versions — none of the 5 disorder classes contain "no"
+  const hasDisorder  = !d1Label.includes('no');
+  const isSuicide    = d3Label.includes('suicide') && !d3Label.includes('non');
+
+  // ── Risk banner ───────────────────────────────────────────────
+  const rb=document.getElementById('riskBanner');
+  if(isRisk){
+    rb.className='risk-banner danger';
+    document.getElementById('rbIcon').textContent='⚠';
+    document.getElementById('rbTitle').textContent='High Suicide Risk Detected';
+    document.getElementById('rbBody').textContent='D3 flagged this text ('+d.suicide_votes+'). This is a research prototype — seek professional help if needed.';
+  }else{
+    rb.className='risk-banner safe';
+    document.getElementById('rbIcon').textContent='✓';
+    document.getElementById('rbTitle').textContent='No immediate crisis risk detected';
+    document.getElementById('rbBody').textContent='D3 did not detect suicidal ideation markers. ('+d.suicide_votes+')';
+  }
+
+  // ── D3 card dominant state ────────────────────────────────────
+  const cardD3=document.getElementById('cardD3');
+  const d3lbl=document.getElementById('cardD3').querySelector('.wc-lbl');
+  // Disagreement: majority voted suicide but XLM-RoBERTa (best model) says non-suicide
+  const majorityVsWinner = isRisk && !isSuicide;
+  if(isRisk){
+    cardD3.classList.add('risk-active');
+    d3lbl.textContent = majorityVsWinner
+      ? 'D3 — '+d.suicide_votes+' · XLM-RoBERTa dissents'
+      : 'D3 — Immediate Risk · XLM-RoBERTa';
+  }else{
+    cardD3.classList.remove('risk-active');
+    d3lbl.textContent = 'D3 — Immediate Risk · XLM-RoBERTa';
+  }
+
+  // ── Clinical Insight Alert ────────────────────────────────────
+  const ci=document.getElementById('clinicalInsight');
+  const ciTitle=document.getElementById('ciTitle');
+  const ciBody=document.getElementById('ciBody');
+
+  // Masked suicidality requires XLM-RoBERTa (best D3 model) to also flag suicide,
+  // not just the classical models — prevents false positives on plain depressive text
+  if(isRisk && isSuicide && notDepressed){
+    // Masked suicidality — confirmed by XLM-RoBERTa + majority vote
+    ciTitle.innerHTML='⚡ Clinical Insight — Masked Suicidality Pattern Detected';
+    ciBody.textContent='This text shows low depressive affect (D2: '+d2res.label+') but high intent resolution (D3: Suicide Risk). This is a clinically documented pre-crisis pattern where a person appears calm and resolved rather than distressed. A sequential pipeline gating D3 behind D2 would have missed this entirely — demonstrating the necessity of the parallel architecture.';
+    ci.style.display='block';
+  }else if(isRisk && majorityVsWinner && notDepressed){
+    // Classical models flag risk but XLM-RoBERTa disagrees — model disagreement
+    ciTitle.innerHTML='⚠ Clinical Insight — Ensemble Disagreement';
+    ciBody.textContent=d.suicide_votes+' (classical models), but XLM-RoBERTa rates this as '+d3res.label+' ('+pct(d3res.confidence)+' confidence). XLM-RoBERTa (98.1% accuracy) likely correct here — classical TF-IDF models can over-flag depressive language as suicide risk. Human review recommended.';
+    ci.style.display='block';
+  }else if(hasDisorder && notDepressed){
+    // Disorder type detected but no depressive affect — affect mismatch
+    ciTitle.innerHTML='⚠ Clinical Insight — Affect Mismatch Detected';
+    ciBody.textContent='D1 identifies '+d1res.label+' presentation, yet D2 finds no classic depressive affect. This is expected: D2 detects Twitter-style depressive language patterns, while psychotic, atypical, and bipolar presentations often do not match that affect profile. The patient is not presenting with classic depressive symptoms but the disorder classification remains clinically valid.';
+    ci.style.display='block';
+  }else{
+    ci.style.display='none';
+  }
+
+  document.getElementById('elapsed').textContent=d.processing_time_ms+'ms';
+
+  // Fixed winner per task: SVM for D1, XLM-RoBERTa for D2 and D3
+  setW('A', d1res);
+  setW('B', d2res);
+  setW('C', d3res);
+
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function setW(id,res){
+  document.getElementById('wp'+id).textContent=res.label;
+  document.getElementById('wc'+id).textContent=pct(res.confidence);
+  setTimeout(()=>document.getElementById('wb'+id).style.width=(res.confidence*100).toFixed(1)+'%',100);
+}
+
+function pct(v){return(v*100).toFixed(1)+'%'}
+</script>
+</body>
+</html>
