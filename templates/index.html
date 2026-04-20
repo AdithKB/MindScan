@@ -525,7 +525,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
           <td>98.9%</td>
           <td>97.1%</td>
           <td>99.3%</td>
-          <td class="winner">99.9%</td>
+          <td class="winner"><span class="gloss" data-tip="Binary task (Depressed / Not Depressed) is structurally simpler than 6-class D1 — the decision boundary is a single line. D2 training set was SMOTE-balanced (8,251→12,800 samples). XLM-RoBERTa's contextual embeddings distinguish subtle affect differences that TF-IDF misses. Exact figure: 99.95% (rounds to 99.9%). Macro F1: 0.9993, κ=0.9986.">99.9%</span></td>
         </tr>
         <tr>
           <td><div class="ds-label"><span class="ds-badge" style="background:var(--red-bg);color:var(--red)">D3</span> Full (232K)</div></td>
@@ -913,7 +913,7 @@ function render(d){
     rb.className='risk-banner safe';
     document.getElementById('rbIcon').textContent='✓';
     document.getElementById('rbTitle').textContent='No immediate crisis risk detected';
-    document.getElementById('rbBody').textContent='D3 did not detect suicidal ideation markers. ('+d.suicide_votes+')';
+    document.getElementById('rbBody').textContent='D3 did not detect suicidal ideation markers.';
   }
 
   // ── D3 card dominant state ────────────────────────────────────
