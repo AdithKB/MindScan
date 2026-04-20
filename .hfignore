@@ -1,0 +1,9 @@
+Dataset/
+notebooks/
+.git/
+.idea/
+.claude/
+QA.md
+ABOUT.md
+requirements/
+README.md
