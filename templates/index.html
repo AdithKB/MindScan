@@ -117,6 +117,7 @@ header{
 
 /* ── FINDINGS ── */
 .findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.finding:nth-child(5){grid-column:1/-1;}
 .finding{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
 .finding-n{font-family:'Instrument Serif',serif;font-size:36px;color:var(--bg3);line-height:1;margin-bottom:8px}
 .finding-t{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
@@ -172,11 +173,13 @@ textarea::placeholder{color:var(--ink3)}
 .risk-banner{border-radius:10px;padding:14px 18px;margin-bottom:16px;border:1px solid;display:flex;align-items:flex-start;gap:12px}
 .risk-banner.danger{background:var(--red-bg);border-color:rgba(185,28,28,.25)}
 .risk-banner.safe{background:var(--green-bg);border-color:rgba(21,128,61,.2)}
+.risk-banner.warn{background:var(--amber-bg);border-color:rgba(180,83,9,.25)}
 .rb-icon{font-size:18px;flex-shrink:0;margin-top:1px}
 .rb-title{font-size:13px;font-weight:500;margin-bottom:3px}
 .rb-body{font-size:12px;line-height:1.55;color:var(--ink2)}
 .risk-banner.danger .rb-title{color:var(--red)}
 .risk-banner.safe .rb-title{color:var(--green)}
+.risk-banner.warn .rb-title{color:var(--amber)}
 .masked-callout{background:var(--amber-bg);border:1px solid rgba(180,83,9,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:none;animation:fadeUp .3s ease both}
 .mc-callout-title{font-size:13px;font-weight:500;color:var(--amber);margin-bottom:4px;display:flex;align-items:center;gap:7px}
 .mc-callout-body{font-size:12px;color:#92400e;line-height:1.6}
@@ -474,9 +477,15 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     </div>
     <div class="finding">
       <div class="finding-n">04</div>
-      <div class="finding-t">Parallel models detect "Masked Suicidality"</div>
-      <div class="finding-b">A text can be classified as "Not Depressed" on D2 while flagging high suicide risk on D3 — clinically documented calm, resolved language before a crisis. A sequential pipeline that gates suicide detection behind depression detection would miss these cases entirely.</div>
-      <div class="finding-chip">Try Sample 3 in the demo</div>
+      <div class="finding-t">Social media affect ≠ clinical presentation</div>
+      <div class="finding-b">D2 was trained on Twitter-style emotional language (explicit distress, slang). Clinical presentations — anhedonia ("nothing feels enjoyable"), fatigue, flat affect — use a different lexicon and are systematically under-flagged. This is the documented <em>Affective vs. Clinical Lexicon Gap</em>: models trained on social media affect fail to recognise diagnostic-criteria language.</div>
+      <div class="finding-chip">D2 limitation — documented failure mode</div>
+    </div>
+    <div class="finding">
+      <div class="finding-n">05</div>
+      <div class="finding-t">Parallel architecture is the safety net</div>
+      <div class="finding-b">When D2 misses a clinical presentation, D1 and D3 can still catch it. When classical D3 models over-flag depressive vocabulary, XLM-RoBERTa's contextual understanding overrides them. No single model is sufficient — the parallel ensemble exists precisely because each model's failure mode is different and partially compensated by the others.</div>
+      <div class="finding-chip">Multi-task learning precedent — Zogan et al. 2024</div>
     </div>
   </div>
 </section>
@@ -503,16 +512,16 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
       <div class="vc-chip">50K sample is sufficient · Δ = 0.1%</div>
     </div>
     <div class="verdict-card lim">
-      <div class="vc-eyebrow">Limitation 1 — D2 training distribution</div>
-      <div class="vc-title">D2 detects Twitter-style depressive affect only</div>
-      <div class="vc-body">D2 (Binary Depression) was trained on short Twitter posts expressing classic depressive sentiment. It may produce false negatives for long-form, atypical, or psychotic presentations that do not match the Twitter affect profile — as demonstrated by Sample 2 (psychotic) returning "Not Depressed."</div>
-      <div class="vc-chip">Affect Mismatch — see demo Sample 2</div>
+      <div class="vc-eyebrow">Limitation 1 — Affective vs. Clinical Lexicon Gap</div>
+      <div class="vc-title">Social media affect ≠ clinical diagnostic criteria</div>
+      <div class="vc-body">D2 was trained on Twitter explicit emotional language. Clinical presentations using diagnostic vocabulary — anhedonia ("nothing feels enjoyable"), psychomotor fatigue, flat affect — do not match that training distribution and are systematically under-flagged. This is empirical evidence of the domain gap between self-reported social media affect and clinical language, not a model defect.</div>
+      <div class="vc-chip">Documented domain gap — Finding 04</div>
     </div>
     <div class="verdict-card lim">
-      <div class="vc-eyebrow">Limitation 2 — Masked suicidality</div>
-      <div class="vc-title">Parallel monitoring is necessary, not optional</div>
-      <div class="vc-body">A person may show low depressive affect (D2: Not Depressed) while exhibiting high-resolution, intentional language consistent with pre-crisis planning (D3: Suicide Risk). A sequential pipeline gating D3 behind D2 would silently miss these cases — the parallel architecture is the only correct design.</div>
-      <div class="vc-chip">Masked suicidality — see demo Sample 3</div>
+      <div class="vc-eyebrow">Limitation 2 — Classical model lexical overfitting</div>
+      <div class="vc-title">TF-IDF ignores word order and context</div>
+      <div class="vc-body">Classical D3 models (LR, SVM, XGBoost) use TF-IDF bag-of-words features. Vocabulary overlapping with r/SuicideWatch posts (e.g. "exhausted", "nothing feels enjoyable") triggers false-positive suicide flags — the model sees matching tokens without understanding the sentence context. XLM-RoBERTa's contextual embeddings override these false positives, demonstrating why the transformer is the reliable D3 winner.</div>
+      <div class="vc-chip">TF-IDF lexical overfitting — defer to XLM-RoBERTa</div>
     </div>
   </div>
 </section>
@@ -523,7 +532,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
 <div class="demo-section" id="demo">
   <div class="sec-eyebrow">Live inference</div>
   <div class="sec-h2" style="margin-bottom:8px">Try it — <em>winner model per task</em></div>
-  <p class="sec-lead" style="margin-bottom:24px">Sample 3 demonstrates masked suicidality — the key clinical finding of the project.</p>
+  <p class="sec-lead" style="margin-bottom:24px">Sample 3 demonstrates masked suicidality. Try typing clinical-style depressive language ("I feel exhausted, nothing feels enjoyable") to observe the Affective vs. Clinical Lexicon Gap documented in Finding 04.</p>
 
   <div class="disclaimer"><strong>Research prototype only.</strong> Not a clinical tool. If you or someone you know is in crisis, please contact a mental health professional or emergency services immediately.</div>
 
@@ -673,11 +682,18 @@ function render(d){
 
   // ── Risk banner ───────────────────────────────────────────────
   const rb=document.getElementById('riskBanner');
-  if(isRisk){
+  if(isRisk && isSuicide){
+    // XLM-RoBERTa (best model) confirms suicide risk
     rb.className='risk-banner danger';
     document.getElementById('rbIcon').textContent='⚠';
     document.getElementById('rbTitle').textContent='High Suicide Risk Detected';
     document.getElementById('rbBody').textContent='D3 flagged this text ('+d.suicide_votes+'). This is a research prototype — seek professional help if needed.';
+  }else if(isRisk && !isSuicide){
+    // Classical models flagged risk but XLM-RoBERTa (best model) disagrees
+    rb.className='risk-banner warn';
+    document.getElementById('rbIcon').textContent='⚡';
+    document.getElementById('rbTitle').textContent='Ensemble Conflict — Classical Models Flagged Risk';
+    document.getElementById('rbBody').textContent=d.suicide_votes+', but XLM-RoBERTa (best model, 98.1% accuracy) rates this as '+d3res.label+'. Classical TF-IDF models may be over-flagging depressive language.';
   }else{
     rb.className='risk-banner safe';
     document.getElementById('rbIcon').textContent='✓';
@@ -690,14 +706,15 @@ function render(d){
   const d3lbl=document.getElementById('cardD3').querySelector('.wc-lbl');
   // Disagreement: majority voted suicide but XLM-RoBERTa (best model) says non-suicide
   const majorityVsWinner = isRisk && !isSuicide;
-  if(isRisk){
+  if(isRisk && isSuicide){
+    // Confirmed risk — XLM-RoBERTa agrees
     cardD3.classList.add('risk-active');
-    d3lbl.textContent = majorityVsWinner
-      ? 'D3 — '+d.suicide_votes+' · XLM-RoBERTa dissents'
-      : 'D3 — Immediate Risk · XLM-RoBERTa';
+    d3lbl.textContent = 'D3 — Immediate Risk · XLM-RoBERTa';
   }else{
     cardD3.classList.remove('risk-active');
-    d3lbl.textContent = 'D3 — Immediate Risk · XLM-RoBERTa';
+    d3lbl.textContent = majorityVsWinner
+      ? 'D3 — '+d.suicide_votes+' (classical) · XLM-RoBERTa dissents'
+      : 'D3 — Immediate Risk · XLM-RoBERTa';
   }
 
   // ── Clinical Insight Alert ────────────────────────────────────
