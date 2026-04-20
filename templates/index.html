@@ -122,7 +122,7 @@ header{
 .md-block-val em{color:var(--blue);font-style:normal;font-weight:500}
 
 /* ── EVIDENCE MATRIX ── */
-.matrix-wrap{overflow-x:auto;margin-top:28px}
+.matrix-wrap{overflow-x:visible;margin-top:28px}
 .matrix-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .matrix-tbl th{text-align:center;padding:11px 16px;background:var(--bg2);border-bottom:2px solid var(--border2);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500}
 .matrix-tbl th:first-child{text-align:left;min-width:200px}
@@ -438,7 +438,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
         </div>
         <div class="md-block">
           <div class="md-block-lbl">D3 — Suicide Risk (Kaggle: nikhileswarkomati)</div>
-          <div class="md-block-val"><em>232,074 Reddit posts · 2 classes</em> — Suicide / Non-Suicide (perfectly balanced, 116,037 each). Suicide posts average <em>200.8 words</em> (mean), non-suicide posts 63 words. We sample <em>50K posts</em> and compare against full/half splits to answer RQ2.</div>
+          <div class="md-block-val"><em>232,074 Reddit posts · 2 classes</em> — Suicide / Non-Suicide (perfectly balanced, 116,037 each). Suicide posts average <em>212.1 words</em> (mean), non-suicide posts 63 words. We sample <em>50K posts</em> and compare against full/half splits to answer RQ2.</div>
         </div>
         <div class="md-block">
           <div class="md-block-lbl">Business Context</div>
@@ -482,7 +482,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
         </div>
         <div class="md-block">
           <div class="md-block-lbl">XGBoost Algorithm Collapse</div>
-          <div class="md-block-val">XGBoost accuracy on D3: <em>91.6% (50K sample) → 70.5% (Full 232K) → 60.1% (H1 116K)</em>. Performance degrades as training data grows. The H1/H2 results are also inconsistent (60.1% vs 71.0%) — gradient boosting is highly sensitive to data distribution shifts at this scale, making it unreliable for large Reddit corpora.</div>
+          <div class="md-block-val">XGBoost accuracy on D3: <em>91.6% (50K) → 70.5% (Full) → 60.1% (H1) / 71.0% (H2)</em>. The "Full" model outperforms the H1/H2 average (65.5%), suggesting that raw volume ($232\text{K}$) provides more stable decision boundaries than the noisier $116\text{K}$ sub-splits.</div>
         </div>
         <div class="md-block">
           <div class="md-block-lbl"><span class="cm-term" onclick="openCM('split_study')">D3 Split Study (RQ2)</span></div>
@@ -579,7 +579,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="finding">
       <div class="finding-n">02</div>
       <div class="finding-t">XLM-RoBERTa is the best model for long-form text</div>
-      <div class="finding-b">On Reddit suicide risk posts (D3), XLM-RoBERTa achieves 98.1% Accuracy with the 50K sample. Suicide posts average 200.8 words — rich enough context for transformer embeddings to dominate every competitor. D2 (Twitter, ~31 words) tells the opposite story.</div>
+      <div class="finding-b">On Reddit suicide risk posts (D3), XLM-RoBERTa achieves 98.1% Accuracy with the 50K sample. Suicide posts average 212.1 words — rich enough context for transformer embeddings to dominate every competitor. D2 (Twitter, ~31 words) tells the opposite story.</div>
       <div class="finding-chip">D3 Accuracy: XLM-RoBERTa 98.1%</div>
     </div>
     <div class="finding">
@@ -756,7 +756,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     <div class="faq-group-title">Methodology &amp; Models</div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why four model types per dataset? Why not just use the best one? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">Each captures a different inductive bias: Logistic Regression (linear decision boundary), SVM (maximum-margin), Random Forest/XGBoost (non-linear tree ensembles), XLM-RoBERTa (contextual transformer). Disagreement between models is itself a signal. On D1, SVM (92.4%) beats XLM-RoBERTa (90.5%) — short tweets don't give the transformer enough context to gain advantage. On D3 (200.8-word Reddit posts), XLM-RoBERTa (98.1%) dominates every classical model.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">Each captures a different inductive bias: Logistic Regression (linear decision boundary), SVM (maximum-margin), Random Forest/XGBoost (non-linear tree ensembles), XLM-RoBERTa (contextual transformer). Disagreement between models is itself a signal. On D1, SVM (92.4%) beats XLM-RoBERTa (90.5%) — short tweets don't give the transformer enough context to gain advantage. On D3 (212-word Reddit posts), XLM-RoBERTa (98.1%) dominates every classical model.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">What are your TF-IDF settings and why? <span class="faq-chevron">▼</span></button>
@@ -764,7 +764,7 @@ footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);fo
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">How was XLM-RoBERTa fine-tuned? What hyperparameters? <span class="faq-chevron">▼</span></button>
-      <div class="faq-a"><div class="faq-a-inner">Standard sequence classification fine-tuning: Adam optimiser, <code>lr=2e-5</code>, <code>3 epochs</code>, linear warmup scheduler. Max token length: 128 for D1/D2 (Twitter-length text), 256 for D3 (Reddit posts average 200.8 words). Cross-entropy loss. Best checkpoint saved by validation accuracy. 278M parameters — multilingual pretraining covers 100 languages.</div></div>
+      <div class="faq-a"><div class="faq-a-inner">Standard sequence classification fine-tuning: Adam optimiser, <code>lr=2e-5</code>, <code>3 epochs</code>, linear warmup scheduler. Max token length: 128 for D1/D2 (Twitter-length text), 256 for D3 (Reddit posts average 212.1 words). Cross-entropy loss. Best checkpoint saved by validation accuracy. 278M parameters — multilingual pretraining covers 100 languages.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">Why did XGBoost collapse on D3 at full scale? <span class="faq-chevron">▼</span></button>
@@ -1059,7 +1059,7 @@ def tokenize_tweets(examples):
         padding='max_length' # pad shorter inputs to fixed length
     )
 
-# D3 uses max_length=256 — Reddit posts avg 200.8 words (~280 tokens)
+# D3 uses max_length=256 — Reddit posts avg 212.1 words (~280 tokens)
 def tokenize_reddit(examples):
     return tokenizer(
         examples['text'],
@@ -1068,7 +1068,7 @@ def tokenize_reddit(examples):
         padding='max_length'
     )`,
     src: 'notebooks/DA_2_Notebook.ipynb — cell 9 (tokenize_tweets, max_length=128, D1/D2) · cell 21 (tokenize_reddit, max_length=256, D3)',
-    why: '<strong>SentencePiece subword tokenisation:</strong> Splits unknown words into subword pieces — "suicidal" might become ["su", "ici", "dal"]. No word is truly out-of-vocabulary. <strong>max_length=128 for D1/D2:</strong> Tweets average ~31 words ≈ 40 tokens. 128 is 3× headroom. <strong>max_length=256 for D3:</strong> Reddit posts average 200.8 words ≈ 280 tokens — 128 would truncate most of the signal. <strong>padding=\'max_length\':</strong> All batches must be identical length for GPU tensor operations — shorter inputs are padded with [PAD] tokens. The attention mask tells the model to ignore padding.',
+    why: '<strong>SentencePiece subword tokenisation:</strong> Splits unknown words into subword pieces — "suicidal" might become ["su", "ici", "dal"]. No word is truly out-of-vocabulary. <strong>max_length=128 for D1/D2:</strong> Tweets average ~31 words ≈ 40 tokens. 128 is 3× headroom. <strong>max_length=256 for D3:</strong> Reddit posts average 212.1 words ≈ 280 tokens — 128 would truncate most of the signal. <strong>padding=\'max_length\':</strong> All batches must be identical length for GPU tensor operations — shorter inputs are padded with [PAD] tokens. The attention mask tells the model to ignore padding.',
     outputs: [
       {label:'D1/D2 shape', val:'Each input → tensor of shape [128] (input_ids) + [128] (attention_mask)'},
       {label:'D3 shape', val:'Each input → tensor of shape [256] × 2'},
@@ -1393,6 +1393,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCM(); });
 
 function toggleFaq(btn){
   const item=btn.closest('.faq-item');
+  const wasOpen=item.classList.contains('open');
+  item.classList.toggle('open',!wasOpen);
+}
+</script>
+</body>
+</html>
+const item=btn.closest('.faq-item');
   const wasOpen=item.classList.contains('open');
   item.classList.toggle('open',!wasOpen);
 }
